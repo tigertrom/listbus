@@ -60,7 +60,7 @@
 
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1.2fr 0.8fr;
             gap: 30px;
             margin-top: 20px;
         }
@@ -93,62 +93,106 @@
             border-radius: 15px;
             padding: 30px;
             position: relative;
-            overflow: hidden;
+            overflow-x: auto;
         }
 
-        .bus-front {
-            text-align: center;
-            background: var(--gray-300);
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            margin-bottom: 20px;
-            font-weight: bold;
-            color: var(--gray-600);
+        .bus-outline {
+            border: 3px solid var(--gray-300);
+            border-radius: 40px 40px 20px 20px;
+            padding: 40px;
             position: relative;
+            background: var(--white);
+            min-width: 700px;
         }
 
-        .bus-front::after {
-            content: '🚌';
+        .driver-area {
             position: absolute;
-            right: 20px;
+            left: -3px;
             top: 50%;
             transform: translateY(-50%);
+            width: 60px;
+            height: 80px;
+            background: var(--gray-200);
+            border-radius: 0 40px 40px 0;
+            border: 3px solid var(--gray-300);
+            border-left: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.5rem;
         }
 
-        .seats-grid {
+        .bus-layout {
+            display: flex;
+            gap: 60px;
+            margin-left: 40px;
+        }
+
+        .left-section {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .upper-deck, .lower-deck {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .deck-label {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+            text-align: center;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .left-seats {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
-            max-width: 400px;
-            margin: 0 auto;
+        }
+
+        .right-section {
+            flex: 1;
+        }
+
+        .right-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .seat-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 60px 1fr 1fr;
+            gap: 10px;
+            align-items: center;
         }
 
         .seat {
             aspect-ratio: 1;
             border: 2px solid var(--gray-300);
-            border-radius: 12px;
+            border-radius: 8px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background: var(--white);
             font-weight: 600;
-            color: var(--gray-600);
+            color: var(--gray-800);
             position: relative;
-            overflow: hidden;
+            min-height: 60px;
+            padding: 5px;
         }
 
-        .seat::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gray-300);
-            transition: background 0.3s;
+        .seat-number {
+            font-size: 1.1rem;
+            font-weight: 700;
         }
 
         .seat:hover:not(.occupied) {
@@ -164,33 +208,27 @@
             transform: scale(1.05);
         }
 
-        .seat.selected::before {
-            background: var(--primary-dark);
-        }
-
         .seat.occupied {
             background: var(--gray-200);
             cursor: not-allowed;
             opacity: 0.6;
         }
 
-        .seat.occupied::after {
-            content: '✓';
-            position: absolute;
-            font-size: 1.2rem;
+        .seat.occupied .seat-number {
+            text-decoration: line-through;
         }
 
-        .aisle {
-            grid-column: 3;
-            grid-row: 1 / span 10;
-            width: 20px;
+        .aisle-space {
+            text-align: center;
+            color: var(--gray-400);
+            font-size: 0.8rem;
         }
 
         .legend {
             display: flex;
             gap: 20px;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 30px;
             flex-wrap: wrap;
         }
 
@@ -203,15 +241,20 @@
         }
 
         .legend-box {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
             border: 2px solid var(--gray-300);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
         }
 
-        .legend-box.available { background: var(--white); }
-        .legend-box.selected { background: var(--primary); border-color: var(--primary); }
-        .legend-box.occupied { background: var(--gray-200); opacity: 0.6; }
+        .legend-box.available { background: var(--white); color: var(--gray-800); }
+        .legend-box.selected { background: var(--primary); border-color: var(--primary); color: var(--white); }
+        .legend-box.occupied { background: var(--gray-200); opacity: 0.6; color: var(--gray-600); }
 
         .form-group {
             margin-bottom: 20px;
@@ -446,6 +489,27 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        .scroll-hint {
+            display: none;
+            text-align: center;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .scroll-hint {
+                display: block;
+            }
+            .bus-container {
+                padding: 15px;
+            }
+            .bus-outline {
+                padding: 20px;
+                min-width: 600px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -457,11 +521,11 @@
 
         <div class="stats" id="statsContainer">
             <div class="stat-card">
-                <div class="stat-number" id="totalSeats">40</div>
+                <div class="stat-number" id="totalSeats">48</div>
                 <div class="stat-label">Total de Lugares</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="availableSeats">40</div>
+                <div class="stat-number" id="availableSeats">48</div>
                 <div class="stat-label">Disponíveis</div>
             </div>
             <div class="stat-card">
@@ -476,22 +540,43 @@
                     <span>🪑</span>
                     Selecione seu Assento
                 </h2>
+                <p class="scroll-hint">← Deslize para ver todos os assentos →</p>
                 <div class="bus-container">
-                    <div class="bus-front">FRENTE DO ÔNIBUS</div>
-                    <div class="seats-grid" id="seatsGrid">
-                        <!-- Assentos gerados via JavaScript -->
+                    <div class="bus-outline">
+                        <div class="driver-area">🧑‍✈️</div>
+                        <div class="bus-layout">
+                            <div class="left-section">
+                                <div class="upper-deck">
+                                    <div class="deck-label">Superior</div>
+                                    <div class="left-seats" id="upperLeftSeats">
+                                        <!-- 3 e 4 -->
+                                    </div>
+                                </div>
+                                <div class="lower-deck">
+                                    <div class="deck-label">Inferior</div>
+                                    <div class="left-seats" id="lowerLeftSeats">
+                                        <!-- 1 e 2 -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="right-section">
+                                <div class="right-rows" id="rightRows">
+                                    <!-- Fileiras 5-48 -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="legend">
                         <div class="legend-item">
-                            <div class="legend-box available"></div>
+                            <div class="legend-box available">12</div>
                             <span>Disponível</span>
                         </div>
                         <div class="legend-item">
-                            <div class="legend-box selected"></div>
+                            <div class="legend-box selected">12</div>
                             <span>Selecionado</span>
                         </div>
                         <div class="legend-item">
-                            <div class="legend-box occupied"></div>
+                            <div class="legend-box occupied">12</div>
                             <span>Ocupado</span>
                         </div>
                     </div>
@@ -568,14 +653,15 @@
     </div>
 
     <script>
-        // Configuração
-        const TOTAL_SEATS = 40;
-        const SEATS_PER_ROW = 4;
+        // Configuração baseada na imagem
+        const TOTAL_SEATS = 48;
         let selectedSeat = null;
         let volunteers = JSON.parse(localStorage.getItem('volunteers')) || [];
 
         // Elementos DOM
-        const seatsGrid = document.getElementById('seatsGrid');
+        const upperLeftSeats = document.getElementById('upperLeftSeats');
+        const lowerLeftSeats = document.getElementById('lowerLeftSeats');
+        const rightRows = document.getElementById('rightRows');
         const seatNumberInput = document.getElementById('seatNumber');
         const submitBtn = document.getElementById('submitBtn');
         const form = document.getElementById('volunteerForm');
@@ -591,44 +677,77 @@
             setupEventListeners();
         }
 
-        // Renderizar assentos
+        // Renderizar assentos conforme layout da imagem
         function renderSeats() {
-            seatsGrid.innerHTML = '';
             const occupiedSeats = volunteers.map(v => v.seatNumber);
 
-            for (let i = 1; i <= TOTAL_SEATS; i++) {
-                const seat = document.createElement('div');
-                seat.className = 'seat';
-                seat.textContent = i;
-                seat.dataset.seat = i;
+            // Limpar containers
+            upperLeftSeats.innerHTML = '';
+            lowerLeftSeats.innerHTML = '';
+            rightRows.innerHTML = '';
 
-                // Corredor no meio (assentos 2 e 3 de cada fileira)
-                if ((i - 1) % SEATS_PER_ROW === 2) {
-                    const aisle = document.createElement('div');
-                    aisle.className = 'aisle';
-                    seatsGrid.appendChild(aisle);
-                }
+            // Assentos 3 e 4 (superior esquerda)
+            [3, 4].forEach(num => createSeat(num, upperLeftSeats, occupiedSeats));
+            
+            // Assentos 1 e 2 (inferior esquerda)
+            [1, 2].forEach(num => createSeat(num, lowerLeftSeats, occupiedSeats));
 
-                if (occupiedSeats.includes(i)) {
-                    seat.classList.add('occupied');
-                    const volunteer = volunteers.find(v => v.seatNumber === i);
-                    seat.title = `Ocupado por: ${volunteer.firstName} ${volunteer.lastName}`;
-                } else {
-                    seat.addEventListener('click', () => selectSeat(i));
-                }
-
-                seatsGrid.appendChild(seat);
+            // Assentos 5-48 (direita) - 11 fileiras de 4 assentos (2+2)
+            // Padrão: fileira ímpar: 5,9,13... à esquerda | fileira par: 6,10,14... à esquerda
+            //         fileira ímpar+2: 7,11,15... à direita | fileira par+2: 8,12,16... à direita
+            
+            for (let row = 0; row < 11; row++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'seat-row';
+                
+                const base = 5 + (row * 4);
+                const seatsInRow = [base, base + 1, null, base + 2, base + 3]; // null = corredor
+                
+                seatsInRow.forEach((seatNum, index) => {
+                    if (seatNum === null) {
+                        const aisle = document.createElement('div');
+                        aisle.className = 'aisle-space';
+                        aisle.innerHTML = '↕';
+                        rowDiv.appendChild(aisle);
+                    } else {
+                        if (seatNum <= 48) {
+                            createSeat(seatNum, rowDiv, occupiedSeats);
+                        }
+                    }
+                });
+                
+                rightRows.appendChild(rowDiv);
             }
+        }
+
+        // Criar elemento de assento
+        function createSeat(number, container, occupiedSeats) {
+            const seat = document.createElement('div');
+            seat.className = 'seat';
+            seat.dataset.seat = number;
+            
+            const numSpan = document.createElement('span');
+            numSpan.className = 'seat-number';
+            numSpan.textContent = number;
+            seat.appendChild(numSpan);
+
+            if (occupiedSeats.includes(number)) {
+                seat.classList.add('occupied');
+                const volunteer = volunteers.find(v => v.seatNumber === number);
+                seat.title = `Ocupado por: ${volunteer.firstName} ${volunteer.lastName}`;
+            } else {
+                seat.addEventListener('click', () => selectSeat(number));
+            }
+
+            container.appendChild(seat);
         }
 
         // Selecionar assento
         function selectSeat(seatNumber) {
-            // Remover seleção anterior
             document.querySelectorAll('.seat.selected').forEach(seat => {
                 seat.classList.remove('selected');
             });
 
-            // Adicionar nova seleção
             const seatElement = document.querySelector(`[data-seat="${seatNumber}"]`);
             seatElement.classList.add('selected');
             
@@ -636,7 +755,6 @@
             seatNumberInput.value = `Assento ${seatNumber}`;
             submitBtn.disabled = false;
 
-            // Scroll suave para o formulário em mobile
             if (window.innerWidth < 968) {
                 document.querySelector('.card:last-child').scrollIntoView({ behavior: 'smooth' });
             }
@@ -704,29 +822,24 @@
                 registrationDate: new Date().toISOString()
             };
 
-            // Validações
             if (!validateAge(formData.birthDate)) {
                 showError('É necessário ter pelo menos 18 anos para se cadastrar.');
                 return;
             }
 
-            // Verificar se email já existe
             if (volunteers.some(v => v.email === formData.email)) {
                 showError('Este email já está cadastrado!');
                 return;
             }
 
-            // Simular envio
             submitBtn.disabled = true;
             submitBtn.innerHTML = 'Processando... <span class="loading"></span>';
 
             await new Promise(resolve => setTimeout(resolve, 1500));
 
-            // Salvar
             volunteers.push(formData);
             localStorage.setItem('volunteers', JSON.stringify(volunteers));
 
-            // Sucesso
             successMessage.style.display = 'block';
             form.reset();
             selectedSeat = null;
@@ -735,17 +848,14 @@
             seatNumberInput.value = '';
             seatNumberInput.placeholder = 'Clique em um assento ao lado';
 
-            // Atualizar interface
             renderSeats();
             updateStats();
             renderVolunteersList();
 
-            // Esconder mensagem de sucesso após 5s
             setTimeout(() => {
                 successMessage.style.display = 'none';
             }, 5000);
 
-            // Scroll para lista de voluntários
             document.getElementById('volunteersList').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -769,8 +879,7 @@
             listSection.style.display = 'block';
             container.innerHTML = '';
 
-            // Ordenar por data de cadastro (mais recente primeiro)
-            const sortedVolunteers = [...volunteers].reverse();
+            const sortedVolunteers = [...volunteers].sort((a, b) => a.seatNumber - b.seatNumber);
 
             sortedVolunteers.forEach((volunteer, index) => {
                 const card = document.createElement('div');
