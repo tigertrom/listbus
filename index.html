@@ -92,6 +92,12 @@
             font-size: 0.95rem;
         }
 
+        .optional {
+            font-weight: 400;
+            color: var(--gray-600);
+            font-size: 0.85rem;
+        }
+
         input, select, textarea {
             width: 100%;
             padding: 12px 16px;
@@ -182,7 +188,7 @@
         .modal-content {
             background: var(--white);
             border-radius: 20px;
-            max-width: 900px;
+            max-width: 1000px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
@@ -239,57 +245,99 @@
             padding: 30px;
         }
 
-        /* Bus Layout */
+        /* Bus Layout - DOIS ANDARES */
         .bus-container {
             display: flex;
-            gap: 40px;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-direction: column;
+            gap: 30px;
         }
 
         .deck-section {
-            flex: 1;
-            min-width: 300px;
-            max-width: 400px;
+            background: var(--gray-50);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid var(--gray-200);
+        }
+
+        .deck-section.upper {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            border-color: var(--primary);
+        }
+
+        .deck-section.lower {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: var(--secondary);
         }
 
         .deck-title {
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--gray-800);
-            margin-bottom: 20px;
-            padding: 10px;
-            background: var(--gray-100);
+            margin-bottom: 25px;
+            padding: 12px;
+            background: var(--white);
             border-radius: 10px;
-            border-left: 4px solid var(--secondary);
+            box-shadow: var(--shadow);
         }
 
-        .deck-section.upper .deck-title {
-            border-left-color: var(--primary);
+        .deck-layout {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .deck-side {
+            flex: 1;
+            min-width: 280px;
+            max-width: 400px;
+        }
+
+        .side-label {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .seats-grid {
             display: grid;
+            gap: 12px;
+        }
+
+        .upper-grid {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        .lower-grid {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        .right-grid {
+            display: flex;
+            flex-direction: column;
             gap: 10px;
         }
 
-        .upper-deck-grid {
-            grid-template-columns: repeat(2, 1fr);
-            max-width: 200px;
-            margin: 0 auto;
-        }
-
-        .lower-deck-grid {
-            grid-template-columns: repeat(2, 1fr);
-            max-width: 200px;
-            margin: 0 auto;
+        .seat-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 40px 1fr 1fr;
+            gap: 8px;
+            align-items: center;
         }
 
         .seat {
             aspect-ratio: 1;
             border: 2px solid var(--gray-300);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -300,11 +348,12 @@
             font-weight: 700;
             color: var(--gray-800);
             position: relative;
-            min-height: 70px;
+            min-height: 60px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .seat:hover:not(.occupied) {
-            transform: translateY(-3px);
+            transform: translateY(-3px) scale(1.05);
             box-shadow: var(--shadow-lg);
             border-color: var(--primary);
         }
@@ -313,44 +362,33 @@
             background: var(--primary);
             color: var(--white);
             border-color: var(--primary);
-            transform: scale(1.05);
+            transform: scale(1.1);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);
         }
 
         .seat.occupied {
-            background: var(--gray-200);
+            background: var(--gray-300);
             cursor: not-allowed;
-            opacity: 0.6;
+            opacity: 0.7;
         }
 
         .seat.occupied::after {
-            content: '✓';
+            content: '✕';
             position: absolute;
             font-size: 1.5rem;
             color: var(--gray-600);
-        }
-
-        .right-section-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .seat-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 30px 1fr 1fr;
-            gap: 8px;
-            align-items: center;
+            font-weight: 900;
         }
 
         .aisle-indicator {
             text-align: center;
             color: var(--gray-400);
-            font-size: 0.8rem;
+            font-size: 0.9rem;
         }
 
         .legend {
             display: flex;
-            gap: 20px;
+            gap: 30px;
             justify-content: center;
             margin-top: 30px;
             flex-wrap: wrap;
@@ -361,21 +399,28 @@
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: var(--gray-600);
+            gap: 10px;
+            font-size: 0.95rem;
+            color: var(--gray-700);
+            font-weight: 500;
         }
 
         .legend-box {
-            width: 30px;
-            height: 30px;
-            border-radius: 6px;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
             border: 2px solid var(--gray-300);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .legend-box.available { background: var(--white); }
-        .legend-box.selected { background: var(--primary); border-color: var(--primary); }
-        .legend-box.occupied { background: var(--gray-200); opacity: 0.6; }
+        .legend-box.available { background: var(--white); color: var(--gray-800); }
+        .legend-box.selected { background: var(--primary); border-color: var(--primary); color: var(--white); }
+        .legend-box.occupied { background: var(--gray-300); opacity: 0.7; color: var(--gray-600); }
 
         .success-message {
             display: none;
@@ -386,6 +431,7 @@
             margin-bottom: 20px;
             animation: slideIn 0.5s ease;
             text-align: center;
+            font-weight: 600;
         }
 
         .error-message {
@@ -417,10 +463,12 @@
             border: 1px solid rgba(255,255,255,0.3);
             font-size: 0.9rem;
             transition: all 0.3s;
+            font-weight: 600;
         }
 
         .admin-btn:hover {
             background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
         }
 
         .admin-panel {
@@ -441,8 +489,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
-            overflow-x: auto;
-            display: block;
+            font-size: 0.9rem;
         }
 
         .volunteers-table th,
@@ -466,14 +513,16 @@
 
         .action-btns {
             display: flex;
-            gap: 5px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .action-btns button {
             padding: 6px 12px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             margin: 0;
             width: auto;
+            border-radius: 6px;
         }
 
         .stats-grid {
@@ -484,14 +533,15 @@
         }
 
         .stat-card {
-            background: var(--gray-100);
+            background: linear-gradient(135deg, var(--gray-100) 0%, var(--white) 100%);
             padding: 20px;
             border-radius: 12px;
             text-align: center;
+            border: 2px solid var(--gray-200);
         }
 
         .stat-number {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 700;
             color: var(--primary);
         }
@@ -500,6 +550,7 @@
             color: var(--gray-600);
             font-size: 0.9rem;
             margin-top: 5px;
+            font-weight: 600;
         }
 
         .loading {
@@ -564,6 +615,16 @@
         .hidden {
             display: none !important;
         }
+
+        .info-text {
+            background: var(--gray-100);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            border-left: 4px solid var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -583,6 +644,11 @@
                 <span>📝</span>
                 Dados do Voluntário
             </h2>
+            
+            <div class="info-text">
+                <strong>📋 Instruções:</strong> Preencha seus dados abaixo. Os campos marcados com * são obrigatórios. Após preencher, clique em "Selecionar Assento" para escolher seu lugar no ônibus.
+            </div>
+
             <div class="success-message" id="successMessage">
                 ✅ Cadastro realizado com sucesso! Você receberá um email de confirmação.
             </div>
@@ -611,8 +677,8 @@
                         <input type="text" id="rg" required placeholder="00.000.000-0" maxlength="12">
                     </div>
                     <div class="form-group">
-                        <label for="cpf">CPF *</label>
-                        <input type="text" id="cpf" required placeholder="000.000.000-00" maxlength="14">
+                        <label for="cpf">CPF <span class="optional">(opcional)</span></label>
+                        <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14">
                     </div>
                 </div>
 
@@ -628,17 +694,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="emergencyContact">Contato de Emergência *</label>
-                    <input type="text" id="emergencyContact" required placeholder="Nome e telefone">
+                    <label for="emergencyContact">Contato de Emergência <span class="optional">(opcional)</span></label>
+                    <input type="text" id="emergencyContact" placeholder="Nome e telefone de alguém próximo">
                 </div>
 
                 <div class="form-group">
-                    <label for="medicalInfo">Informações Médicas Relevantes</label>
+                    <label for="medicalInfo">Informações Médicas Relevantes <span class="optional">(opcional)</span></label>
                     <textarea id="medicalInfo" rows="3" placeholder="Alergias, restrições alimentares, condições especiais..."></textarea>
                 </div>
 
                 <button type="button" id="selectSeatBtn" onclick="openSeatModal()">
-                    Selecionar Assento
+                    Selecionar Assento 🪑
                 </button>
             </form>
         </div>
@@ -649,7 +715,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number" id="adminTotalSeats">48</div>
-                    <div class="stat-label">Total</div>
+                    <div class="stat-label">Total de Assentos</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="adminOccupiedSeats">0</div>
@@ -671,6 +737,7 @@
                             <th>CPF</th>
                             <th>Telefone</th>
                             <th>Email</th>
+                            <th>Contato Emerg.</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -693,42 +760,64 @@
                 <button class="close-btn" onclick="closeSeatModal()">×</button>
             </div>
             <div class="modal-body">
+                <div class="info-text" style="margin-bottom: 25px;">
+                    <strong>🚌 Dica:</strong> O deck superior (azul) é o andar de cima (leito). O deck inferior (amarelo) é o andar de baixo (executivo).
+                </div>
+
                 <div class="bus-container">
-                    <!-- Deck Superior -->
+                    <!-- DECK SUPERIOR -->
                     <div class="deck-section upper">
-                        <div class="deck-title">🟦 Deck Superior (Leito)</div>
-                        <div class="seats-grid upper-deck-grid" id="upperDeckSeats">
-                            <!-- Assentos 3, 4, 7, 8, 11, 12, etc (superior esquerda + direita) -->
+                        <div class="deck-title">🟦 DECK SUPERIOR (Leito)</div>
+                        <div class="deck-layout">
+                            <!-- Lado Esquerdo Superior -->
+                            <div class="deck-side">
+                                <div class="side-label">Lado Esquerdo</div>
+                                <div class="seats-grid upper-grid" id="upperLeftSeats"></div>
+                            </div>
+                            <!-- Lado Direito Superior -->
+                            <div class="deck-side">
+                                <div class="side-label">Lado Direito</div>
+                                <div class="seats-grid right-grid" id="upperRightSeats"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Deck Inferior -->
-                    <div class="deck-section">
-                        <div class="deck-title">🟨 Deck Inferior (Executivo)</div>
-                        <div class="seats-grid lower-deck-grid" id="lowerDeckSeats">
-                            <!-- Assentos 1, 2, 5, 6, 9, 10, etc (inferior esquerda + direita) -->
+                    <!-- DECK INFERIOR -->
+                    <div class="deck-section lower">
+                        <div class="deck-title">🟨 DECK INFERIOR (Executivo)</div>
+                        <div class="deck-layout">
+                            <!-- Lado Esquerdo Inferior -->
+                            <div class="deck-side">
+                                <div class="side-label">Lado Esquerdo</div>
+                                <div class="seats-grid lower-grid" id="lowerLeftSeats"></div>
+                            </div>
+                            <!-- Lado Direito Inferior -->
+                            <div class="deck-side">
+                                <div class="side-label">Lado Direito</div>
+                                <div class="seats-grid right-grid" id="lowerRightSeats"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="legend">
                     <div class="legend-item">
-                        <div class="legend-box available"></div>
+                        <div class="legend-box available">12</div>
                         <span>Disponível</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-box selected"></div>
+                        <div class="legend-box selected">12</div>
                         <span>Selecionado</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-box occupied"></div>
+                        <div class="legend-box occupied">✕</div>
                         <span>Ocupado</span>
                     </div>
                 </div>
 
                 <div style="margin-top: 30px; text-align: center;">
                     <button id="confirmSeatBtn" onclick="confirmSeatSelection()" disabled>
-                        Confirmar Assento <span id="selectedSeatDisplay"></span>
+                        Confirmar Cadastro no Assento <span id="selectedSeatDisplay" style="font-weight: 900;"></span>
                     </button>
                 </div>
             </div>
@@ -748,58 +837,37 @@
                     <label>Senha de Administrador</label>
                     <input type="password" id="adminPassword" placeholder="Digite a senha">
                 </div>
-                <button onclick="checkAdminPassword()">Acessar</button>
+                <button onclick="checkAdminPassword()">Acessar Painel</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO FIREBASE - SUBSTITUA COM SUAS CREDENCIAIS
+        // CONFIGURAÇÃO FIREBASE - SUAS CREDENCIAIS
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_PROJETO.firebaseapp.com",
-            projectId: "SEU_PROJETO",
-            storageBucket: "SEU_PROJETO.appspot.com",
-            messagingSenderId: "SEU_SENDER_ID",
-            appId: "SEU_APP_ID"
+            apiKey: "AIzaSyAB7cZcS77JnchllAtITu1JS2tMDLON8SI",
+            authDomain: "listbus-b5570.firebaseapp.com",
+            projectId: "listbus-b5570",
+            storageBucket: "listbus-b5570.firebasestorage.app",
+            messagingSenderId: "661871396138",
+            appId: "1:661871396138:web:1f884a4df8cc75390e4a53",
+            measurementId: "G-RV0R8LM73P"
         };
 
-        // Inicializar Firebase (quando configurado)
-        let db;
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Variáveis globais
         let volunteers = [];
         let selectedSeat = null;
         let tempFormData = null;
 
-        // Tentar inicializar Firebase se configuração existir
-        if (firebaseConfig.apiKey !== "SUA_API_KEY") {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            loadVolunteersFromFirebase();
-        } else {
-            // Modo demo com LocalStorage
-            console.log("Firebase não configurado - usando LocalStorage");
-            volunteers = JSON.parse(localStorage.getItem('volunteers')) || [];
-            updateInterface();
-        }
-
-        // Carregar voluntários do Firebase
-        function loadVolunteersFromFirebase() {
-            db.collection('volunteers').onSnapshot((snapshot) => {
-                volunteers = [];
-                snapshot.forEach((doc) => {
-                    volunteers.push({ id: doc.id, ...doc.data() });
-                });
-                updateInterface();
-            });
-        }
-
-        // Elementos
+        // Elementos DOM
         const seatModal = document.getElementById('seatModal');
         const adminLoginModal = document.getElementById('adminLoginModal');
-        const upperDeckSeats = document.getElementById('upperDeckSeats');
-        const lowerDeckSeats = document.getElementById('lowerDeckSeats');
 
-        // Máscaras
+        // Máscaras de input
         document.getElementById('cpf').addEventListener('input', (e) => {
             e.target.value = maskCPF(e.target.value);
         });
@@ -835,15 +903,32 @@
                 .replace(/(-\d{4})\d+?$/, '$1');
         }
 
+        // Carregar voluntários do Firebase em tempo real
+        db.collection('volunteers').onSnapshot((snapshot) => {
+            volunteers = [];
+            snapshot.forEach((doc) => {
+                volunteers.push({ id: doc.id, ...doc.data() });
+            });
+            updateInterface();
+        });
+
         // Abrir modal de assentos
         function openSeatModal() {
-            // Validar formulário primeiro
-            const form = document.getElementById('volunteerForm');
-            const requiredFields = ['firstName', 'lastName', 'email', 'rg', 'cpf', 'phone', 'birthDate', 'emergencyContact'];
+            // Validar campos OBRIGATÓRIOS apenas
+            const requiredFields = ['firstName', 'lastName', 'email', 'rg', 'phone', 'birthDate'];
             
             for (let field of requiredFields) {
-                if (!document.getElementById(field).value.trim()) {
-                    showError('Por favor, preencha todos os campos obrigatórios antes de selecionar o assento.');
+                const value = document.getElementById(field).value.trim();
+                if (!value) {
+                    const fieldNames = {
+                        'firstName': 'Nome',
+                        'lastName': 'Sobrenome',
+                        'email': 'E-mail',
+                        'rg': 'RG',
+                        'phone': 'Telefone',
+                        'birthDate': 'Data de Nascimento'
+                    };
+                    showError(`Por favor, preencha o campo "${fieldNames[field]}" antes de continuar.`);
                     return;
                 }
             }
@@ -855,17 +940,18 @@
                 return;
             }
 
-            // Salvar dados temporariamente
+            // Salvar dados temporariamente (CPF e Emergência são opcionais)
             tempFormData = {
                 firstName: document.getElementById('firstName').value.trim(),
                 lastName: document.getElementById('lastName').value.trim(),
                 email: document.getElementById('email').value.trim(),
                 rg: document.getElementById('rg').value,
-                cpf: document.getElementById('cpf').value,
+                cpf: document.getElementById('cpf').value || '', // Opcional
                 phone: document.getElementById('phone').value,
                 birthDate: birthDate,
-                emergencyContact: document.getElementById('emergencyContact').value.trim(),
-                medicalInfo: document.getElementById('medicalInfo').value.trim()
+                emergencyContact: document.getElementById('emergencyContact').value.trim() || '', // Opcional
+                medicalInfo: document.getElementById('medicalInfo').value.trim() || '',
+                registrationDate: new Date().toISOString()
             };
 
             // Verificar se email já existe
@@ -886,90 +972,42 @@
             selectedSeat = null;
         }
 
-        // Renderizar assentos nos decks
+        // Renderizar assentos nos dois andares
         function renderSeats() {
-            upperDeckSeats.innerHTML = '';
-            lowerDeckSeats.innerHTML = '';
+            const upperLeft = document.getElementById('upperLeftSeats');
+            const upperRight = document.getElementById('upperRightSeats');
+            const lowerLeft = document.getElementById('lowerLeftSeats');
+            const lowerRight = document.getElementById('lowerRightSeats');
+
+            upperLeft.innerHTML = '';
+            upperRight.innerHTML = '';
+            lowerLeft.innerHTML = '';
+            lowerRight.innerHTML = '';
 
             const occupiedSeats = volunteers.map(v => v.seatNumber);
 
-            // Deck Superior: 3,4,7,8,11,12,15,16... (até 48, ímpar+2 no superior esquerda, par+2 superior direita)
-            // Na verdade, pela imagem: Superior = 3,4,7,8,11,12,15,16,19,20,23,24,27,28,31,32,35,36,39,40,43,44,47,48
-            for (let i = 3; i <= 48; i += 4) {
-                // Esquerda superior: i (3,7,11...)
-                createSeat(i, upperDeckSeats, occupiedSeats);
-                // Direita superior: i+1 (4,8,12...)
-                if (i + 1 <= 48) createSeat(i + 1, upperDeckSeats, occupiedSeats);
+            // DECK SUPERIOR (3,4,7,8,11,12,15,16... até 48)
+            // Esquerda: 3,7,11,15,19,23,27,31,35,39,43,47
+            for (let i = 3; i <= 47; i += 4) {
+                createSeat(i, upperLeft, occupiedSeats);
+            }
+            // Direita superior: 4,8,12,16,20,24,28,32,36,40,44,48
+            for (let i = 4; i <= 48; i += 4) {
+                createSeat(i, upperRight, occupiedSeats, true);
             }
 
-            // Deck Inferior: 1,2,5,6,9,10... (até 46, ímpar inferior esquerda, par inferior direita)
-            // 1,2,5,6,9,10,13,14,17,18,21,22,25,26,29,30,33,34,37,38,41,42,45,46
-            for (let i = 1; i <= 46; i += 4) {
-                // Esquerda inferior: i (1,5,9...)
-                createSeat(i, lowerDeckSeats, occupiedSeats);
-                // Direita inferior: i+1 (2,6,10...)
-                if (i + 1 <= 46) createSeat(i + 1, lowerDeckSeats, occupiedSeats);
+            // DECK INFERIOR (1,2,5,6,9,10... até 46)
+            // Esquerda: 1,5,9,13,17,21,25,29,33,37,41,45
+            for (let i = 1; i <= 45; i += 4) {
+                createSeat(i, lowerLeft, occupiedSeats);
             }
-
-            // Adicionar fileiras do lado direito em ambos os decks
-            addRightSideSeats(upperDeckSeats, occupiedSeats, 'upper');
-            addRightSideSeats(lowerDeckSeats, occupiedSeats, 'lower');
+            // Direita inferior: 2,6,10,14,18,22,26,30,34,38,42,46
+            for (let i = 2; i <= 46; i += 4) {
+                createSeat(i, lowerRight, occupiedSeats, true);
+            }
         }
 
-        function addRightSideSeats(container, occupiedSeats, deck) {
-            const rightSection = document.createElement('div');
-            rightSection.className = 'right-section-grid';
-            rightSection.style.marginTop = '20px';
-            
-            // Criar 11 fileiras para o lado direito
-            for (let row = 0; row < 11; row++) {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'seat-row';
-                
-                let seatsInRow;
-                if (deck === 'upper') {
-                    // Superior: fileiras começam do 15,19,23...
-                    const base = 15 + (row * 4);
-                    seatsInRow = [
-                        base <= 48 ? base : null, 
-                        base + 1 <= 48 ? base + 1 : null, 
-                        null, 
-                        base + 2 <= 48 ? base + 2 : null, 
-                        base + 3 <= 48 ? base + 3 : null
-                    ];
-                } else {
-                    // Inferior: fileiras começam do 5,9,13...
-                    const base = 5 + (row * 4);
-                    seatsInRow = [
-                        base <= 46 ? base : null, 
-                        base + 1 <= 46 ? base + 1 : null, 
-                        null, 
-                        base + 2 <= 46 ? base + 2 : null, 
-                        base + 3 <= 46 ? base + 3 : null
-                    ];
-                }
-
-                seatsInRow.forEach((seatNum, index) => {
-                    if (seatNum === null && index === 2) {
-                        const aisle = document.createElement('div');
-                        aisle.className = 'aisle-indicator';
-                        aisle.innerHTML = '•';
-                        rowDiv.appendChild(aisle);
-                    } else if (seatNum !== null) {
-                        createSeat(seatNum, rowDiv, occupiedSeats);
-                    } else {
-                        const empty = document.createElement('div');
-                        rowDiv.appendChild(empty);
-                    }
-                });
-                
-                rightSection.appendChild(rowDiv);
-            }
-            
-            container.appendChild(rightSection);
-        }
-
-        function createSeat(number, container, occupiedSeats) {
+        function createSeat(number, container, occupiedSeats, isRightSide = false) {
             const seat = document.createElement('div');
             seat.className = 'seat';
             seat.textContent = number;
@@ -983,7 +1021,31 @@
                 seat.addEventListener('click', () => selectSeat(number));
             }
 
-            container.appendChild(seat);
+            if (isRightSide) {
+                // Para o lado direito, organizar em fileiras visuais
+                const rowIndex = Math.floor((number - (number % 2 === 0 ? 2 : 1)) / 4);
+                let rowDiv = container.children[rowIndex];
+                if (!rowDiv) {
+                    rowDiv = document.createElement('div');
+                    rowDiv.className = 'seat-row';
+                    container.appendChild(rowDiv);
+                }
+                
+                // Determinar posição na fileira (2+2 com corredor)
+                const posInRow = number % 4;
+                if (posInRow === 2 || posInRow === 0) { // 2,6,10... ou 4,8,12...
+                    // Adicionar corredor se necessário
+                    if (rowDiv.children.length === 2) {
+                        const aisle = document.createElement('div');
+                        aisle.className = 'aisle-indicator';
+                        aisle.innerHTML = '•';
+                        rowDiv.appendChild(aisle);
+                    }
+                }
+                rowDiv.appendChild(seat);
+            } else {
+                container.appendChild(seat);
+            }
         }
 
         function selectSeat(seatNumber) {
@@ -996,7 +1058,7 @@
             
             selectedSeat = seatNumber;
             document.getElementById('confirmSeatBtn').disabled = false;
-            document.getElementById('selectedSeatDisplay').textContent = `(Assento ${seatNumber})`;
+            document.getElementById('selectedSeatDisplay').textContent = selectedSeat;
         }
 
         async function confirmSeatSelection() {
@@ -1008,21 +1070,12 @@
 
             const formData = {
                 ...tempFormData,
-                seatNumber: selectedSeat,
-                registrationDate: new Date().toISOString()
+                seatNumber: selectedSeat
             };
 
             try {
-                if (db) {
-                    await db.collection('volunteers').add(formData);
-                } else {
-                    // Modo LocalStorage
-                    formData.id = Date.now().toString();
-                    volunteers.push(formData);
-                    localStorage.setItem('volunteers', JSON.stringify(volunteers));
-                    updateInterface();
-                }
-
+                await db.collection('volunteers').add(formData);
+                
                 closeSeatModal();
                 document.getElementById('volunteerForm').reset();
                 document.getElementById('successMessage').style.display = 'block';
@@ -1035,7 +1088,7 @@
                 showError('Erro ao salvar cadastro. Tente novamente.');
                 console.error(error);
             } finally {
-                confirmBtn.innerHTML = 'Confirmar Assento <span id="selectedSeatDisplay"></span>';
+                confirmBtn.innerHTML = 'Confirmar Cadastro no Assento <span id="selectedSeatDisplay" style="font-weight: 900;"></span>';
             }
         }
 
@@ -1061,7 +1114,7 @@
             }, 5000);
         }
 
-        // Admin functions
+        // Funções Administrativas
         function toggleAdminLogin() {
             const adminPanel = document.getElementById('adminPanel');
             const registrationCard = document.getElementById('registrationCard');
@@ -1082,7 +1135,7 @@
 
         function checkAdminPassword() {
             const password = document.getElementById('adminPassword').value;
-            // Senha padrão: admin123 (altere conforme necessário)
+            // Senha: admin123 (você pode alterar)
             if (password === 'admin123') {
                 closeAdminLogin();
                 document.getElementById('adminPanel').classList.add('active');
@@ -1106,16 +1159,17 @@
             sorted.forEach(v => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${v.seatNumber}</strong></td>
+                    <td><strong style="color: var(--primary); font-size: 1.1rem;">${v.seatNumber}</strong></td>
                     <td>${v.firstName} ${v.lastName}</td>
                     <td>${v.rg}</td>
-                    <td>${v.cpf}</td>
+                    <td>${v.cpf || '-'}</td>
                     <td>${v.phone}</td>
                     <td>${v.email}</td>
+                    <td>${v.emergencyContact || '-'}</td>
                     <td>
                         <div class="action-btns">
-                            <button class="btn-danger" onclick="deleteVolunteer('${v.id || v.email}')">Remover</button>
-                            <button class="btn-secondary" onclick="changeSeat('${v.id || v.email}')">Mover</button>
+                            <button class="btn-danger" onclick="deleteVolunteer('${v.id}')">Remover</button>
+                            <button class="btn-secondary" onclick="changeSeat('${v.id}')">Mover</button>
                         </div>
                     </td>
                 `;
@@ -1124,52 +1178,42 @@
         }
 
         async function deleteVolunteer(id) {
-            if (!confirm('Tem certeza que deseja remover este voluntário?')) return;
+            if (!confirm('Tem certeza que deseja remover este voluntário? O assento será liberado.')) return;
 
             try {
-                if (db) {
-                    await db.collection('volunteers').doc(id).delete();
-                } else {
-                    volunteers = volunteers.filter(v => (v.id || v.email) !== id);
-                    localStorage.setItem('volunteers', JSON.stringify(volunteers));
-                    updateInterface();
-                }
+                await db.collection('volunteers').doc(id).delete();
             } catch (error) {
                 alert('Erro ao remover voluntário');
             }
         }
 
-        function changeSeat(id) {
-            const volunteer = volunteers.find(v => (v.id || v.email) === id);
+        async function changeSeat(id) {
+            const volunteer = volunteers.find(v => v.id === id);
             if (!volunteer) return;
 
-            const newSeat = prompt(`Mover ${volunteer.firstName} para qual assento? (1-48)`);
+            const newSeat = prompt(`Mover ${volunteer.firstName} ${volunteer.lastName} para qual assento? (1-48)\n\nAssento atual: ${volunteer.seatNumber}`);
             if (!newSeat) return;
 
             const seatNum = parseInt(newSeat);
-            if (seatNum < 1 || seatNum > 48) {
-                alert('Assento inválido!');
+            if (isNaN(seatNum) || seatNum < 1 || seatNum > 48) {
+                alert('Assento inválido! Digite um número entre 1 e 48.');
                 return;
             }
 
-            if (volunteers.some(v => v.seatNumber === seatNum && (v.id || v.email) !== id)) {
-                alert('Assento já ocupado!');
+            if (volunteers.some(v => v.seatNumber === seatNum && v.id !== id)) {
+                alert('Assento já ocupado por outro voluntário!');
                 return;
             }
 
-            // Atualizar assento
-            if (db) {
-                db.collection('volunteers').doc(id).update({ seatNumber: seatNum });
-            } else {
-                const index = volunteers.findIndex(v => (v.id || v.email) === id);
-                volunteers[index].seatNumber = seatNum;
-                localStorage.setItem('volunteers', JSON.stringify(volunteers));
-                updateInterface();
+            try {
+                await db.collection('volunteers').doc(id).update({ seatNumber: seatNum });
+                alert(`Assento alterado com sucesso! ${volunteer.firstName} agora está no assento ${seatNum}.`);
+            } catch (error) {
+                alert('Erro ao alterar assento');
             }
         }
 
         function updateInterface() {
-            // Atualizar estatísticas se necessário
             if (document.getElementById('adminPanel').classList.contains('active')) {
                 renderAdminPanel();
             }
@@ -1177,12 +1221,8 @@
 
         // Fechar modais ao clicar fora
         window.onclick = function(event) {
-            if (event.target === seatModal) {
-                closeSeatModal();
-            }
-            if (event.target === adminLoginModal) {
-                closeAdminLogin();
-            }
+            if (event.target === seatModal) closeSeatModal();
+            if (event.target === adminLoginModal) closeAdminLogin();
         }
     </script>
 </body>
