@@ -7,6 +7,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -20,6 +21,8 @@
             --secondary: #f59e0b;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #06b6d4;
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
             --gray-300: #d1d5db;
@@ -98,6 +101,10 @@
             font-size: 0.85rem;
         }
 
+        .required {
+            color: var(--danger);
+        }
+
         input, select, textarea {
             width: 100%;
             padding: 12px 16px;
@@ -112,6 +119,11 @@
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            background-color: var(--white);
         }
 
         .form-row {
@@ -165,6 +177,32 @@
             background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
         }
 
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+        }
+
+        .btn-google {
+            background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-google::before {
+            content: 'G';
+            font-weight: 900;
+            font-size: 1.2rem;
+            background: white;
+            color: #4285f4;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         /* Modal */
         .modal-overlay {
             display: none;
@@ -190,7 +228,6 @@
             border-radius: 20px;
             max-width: 1100px;
             width: 100%;
-;
             max-height: 95vh;
             overflow-y: auto;
             position: relative;
@@ -339,15 +376,6 @@
             margin-bottom: 10px;
         }
 
-        /* Grid Esquerdo 2x2 */
-        .left-grid-2x2 {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            max-width: 160px;
-        }
-
-        /* Grid Esquerdo extendido (3 fileiras) */
         .left-grid-extended {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -355,7 +383,6 @@
             max-width: 160px;
         }
 
-        /* Grid Direito 2-corredor-2 */
         .right-grid {
             display: flex;
             flex-direction: column;
@@ -369,7 +396,6 @@
             align-items: center;
         }
 
-        /* Grid Inferior 1-corredor-2 */
         .seat-row-3 {
             display: grid;
             grid-template-columns: 70px 40px 70px 70px;
@@ -503,6 +529,33 @@
             animation: shake 0.5s ease;
         }
 
+        .warning-message {
+            display: none;
+            background: var(--warning);
+            color: var(--white);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            animation: shake 0.5s ease;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #1e40af;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #1e3a8a;
+        }
+
         /* Admin Panel */
         .admin-login {
             position: fixed;
@@ -541,6 +594,21 @@
         .admin-panel.active {
             display: block;
             animation: fadeIn 0.5s ease;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-email {
+            font-weight: 600;
+            color: var(--gray-800);
         }
 
         .volunteers-table {
@@ -683,6 +751,39 @@
             border-left: 4px solid var(--primary);
         }
 
+        .responsavel-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .responsavel-section h4 {
+            color: #92400e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .responsavel-info {
+            background: var(--white);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid var(--success);
+        }
+
+        .responsavel-info strong {
+            color: var(--gray-800);
+        }
+
+        .responsavel-info small {
+            color: var(--gray-600);
+        }
+
         @media (max-width: 768px) {
             .deck-layout {
                 flex-direction: column;
@@ -739,7 +840,7 @@
             </h2>
             
             <div class="info-text">
-                <strong>📋 Instruções:</strong> Preencha seus dados abaixo. Os campos marcados com * são obrigatórios. Após preencher, clique em "Selecionar Assento" para escolher seu lugar no ônibus.
+                <strong>📋 Instruções:</strong> Preencha seus dados abaixo. Menores de idade devem estar acompanhados de um responsável já cadastrado.
             </div>
 
             <div class="success-message" id="successMessage">
@@ -750,23 +851,23 @@
             <form id="volunteerForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="firstName">Nome *</label>
+                        <label for="firstName">Nome <span class="required">*</span></label>
                         <input type="text" id="firstName" required placeholder="Digite seu nome">
                     </div>
                     <div class="form-group">
-                        <label for="lastName">Sobrenome *</label>
+                        <label for="lastName">Sobrenome <span class="required">*</span></label>
                         <input type="text" id="lastName" required placeholder="Digite seu sobrenome">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="email">E-mail *</label>
+                    <label for="email">E-mail <span class="required">*</span></label>
                     <input type="email" id="email" required placeholder="seu@email.com">
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="rg">RG *</label>
+                        <label for="rg">RG <span class="required">*</span></label>
                         <input type="text" id="rg" required placeholder="00.000.000-0" maxlength="12">
                     </div>
                     <div class="form-group">
@@ -777,12 +878,29 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="phone">Telefone *</label>
+                        <label for="phone">Telefone <span class="required">*</span></label>
                         <input type="tel" id="phone" required placeholder="(00) 00000-0000" maxlength="15">
                     </div>
                     <div class="form-group">
-                        <label for="birthDate">Data de Nascimento *</label>
-                        <input type="date" id="birthDate" required>
+                        <label for="birthDate">Data de Nascimento <span class="required">*</span></label>
+                        <input type="date" id="birthDate" required onchange="checkAge()">
+                    </div>
+                </div>
+
+                <!-- Seção para menores de idade -->
+                <div id="responsavelSection" class="responsavel-section hidden">
+                    <h4>👨‍👩‍👧 Responsável Legal</h4>
+                    <p style="font-size: 0.9rem; color: #78350f; margin-bottom: 15px;">
+                        Como você é menor de idade, precisa selecionar um responsável que já esteja cadastrado e com assento reservado.
+                    </p>
+                    <div class="form-group">
+                        <label for="responsavelSelect">Selecione o Responsável <span class="required">*</span></label>
+                        <select id="responsavelSelect" onchange="updateResponsavelInfo()">
+                            <option value="">-- Selecione um responsável --</option>
+                        </select>
+                    </div>
+                    <div id="responsavelInfo" class="responsavel-info hidden">
+                        <!-- Info do responsável selecionado -->
                     </div>
                 </div>
 
@@ -805,6 +923,14 @@
         <!-- Painel Administrativo -->
         <div class="admin-panel" id="adminPanel">
             <h2>🔐 Painel Administrativo</h2>
+            
+            <div class="user-info">
+                <span class="user-email" id="adminUserEmail">admin@exemplo.com</span>
+                <button class="btn-secondary" onclick="logoutAdmin()" style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.9rem;">
+                    Sair
+                </button>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number" id="adminTotalSeats">60</div>
@@ -929,20 +1055,35 @@
         </div>
     </div>
 
-    <!-- Modal Admin Login -->
+    <!-- Modal Admin Login com Google -->
     <div class="modal-overlay" id="adminLoginModal">
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content" style="max-width: 450px;">
             <div class="modal-header">
                 <h2>🔐 Acesso Administrativo</h2>
                 <button class="close-btn" onclick="closeAdminLogin()">×</button>
             </div>
             <div class="modal-body">
-                <div class="error-message" id="adminError" style="display: none;"></div>
-                <div class="form-group">
-                    <label>Senha de Administrador</label>
-                    <input type="password" id="adminPassword" placeholder="Digite a senha">
+                <div class="info-box">
+                    <strong>👤 Acesso restrito</strong>
+                    Apenas administradores autorizados podem acessar esta área. Use sua conta Google corporativa.
                 </div>
-                <button onclick="checkAdminPassword()">Acessar Painel</button>
+                
+                <div class="error-message" id="adminError" style="display: none;"></div>
+                <div class="warning-message" id="adminWarning" style="display: none;"></div>
+                
+                <div id="loginForm">
+                    <button class="btn-google" onclick="loginWithGoogle()">
+                        Entrar com Google
+                    </button>
+                    <p style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--gray-600);">
+                        Apenas contas autorizadas terão acesso ao painel administrativo.
+                    </p>
+                </div>
+
+                <div id="loadingAuth" style="display: none; text-align: center; padding: 20px;">
+                    <div class="loading" style="border-color: var(--gray-300); border-top-color: var(--primary);"></div>
+                    <p style="margin-top: 10px; color: var(--gray-600);">Conectando...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -962,15 +1103,42 @@
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // LISTA DE EMAILS ADMINISTRADORES AUTORIZADOS (Google)
+        // Adicione aqui os emails Google que podem acessar o painel administrativo
+        const ADMIN_EMAILS = [
+            'tiago@seudominio.com',           // Substitua pelo seu email real do Google
+            'admin@listbus.com',               // Outro admin
+            'seu.email@gmail.com',             // Seu Gmail pessoal
+            // Adicione mais emails conforme necessário
+        ];
 
         // Variáveis globais
         let volunteers = [];
         let selectedSeat = null;
         let tempFormData = null;
+        let currentUser = null;
+        let isMinor = false;
+        let selectedResponsavel = null;
 
         // Elementos DOM
         const seatModal = document.getElementById('seatModal');
         const adminLoginModal = document.getElementById('adminLoginModal');
+
+        // Verificar estado de autenticação ao carregar
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            if (user && isAdmin(user.email)) {
+                // Usuário já está logado e é admin
+                showAdminPanel(user.email);
+            }
+        });
+
+        // Função para verificar se email é admin
+        function isAdmin(email) {
+            return ADMIN_EMAILS.includes(email.toLowerCase());
+        }
 
         // Máscaras de input
         document.getElementById('cpf').addEventListener('input', (e) => {
@@ -1015,11 +1183,106 @@
                 volunteers.push({ id: doc.id, ...doc.data() });
             });
             updateInterface();
+            updateResponsaveisList(); // Atualizar lista de responsáveis para menores
         });
+
+        // Verificar idade e mostrar campo de responsável se necessário
+        function checkAge() {
+            const birthDate = document.getElementById('birthDate').value;
+            if (!birthDate) return;
+
+            const age = calculateAge(birthDate);
+            isMinor = age < 18;
+
+            const responsavelSection = document.getElementById('responsavelSection');
+            
+            if (isMinor) {
+                responsavelSection.classList.remove('hidden');
+                document.getElementById('responsavelSelect').required = true;
+                updateResponsaveisList();
+            } else {
+                responsavelSection.classList.add('hidden');
+                document.getElementById('responsavelSelect').required = false;
+                document.getElementById('responsavelSelect').value = '';
+                document.getElementById('responsavelInfo').classList.add('hidden');
+                selectedResponsavel = null;
+            }
+        }
+
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+
+        function validateAge(birthDate) {
+            return calculateAge(birthDate) >= 18;
+        }
+
+        // Atualizar lista de responsáveis (maiores de idade já cadastrados)
+        function updateResponsaveisList() {
+            const select = document.getElementById('responsavelSelect');
+            const currentValue = select.value;
+            
+            // Limpar opções exceto a primeira
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+
+            // Filtrar apenas maiores de idade já cadastrados
+            const responsaveis = volunteers.filter(v => {
+                const age = calculateAge(v.birthDate);
+                return age >= 18;
+            });
+
+            responsaveis.forEach(resp => {
+                const option = document.createElement('option');
+                option.value = resp.id;
+                option.textContent = `${resp.firstName} ${resp.lastName} (Assento ${resp.seatNumber})`;
+                select.appendChild(option);
+            });
+
+            // Restaurar seleção anterior se ainda existir
+            if (currentValue) {
+                select.value = currentValue;
+            }
+        }
+
+        function updateResponsavelInfo() {
+            const select = document.getElementById('responsavelSelect');
+            const infoDiv = document.getElementById('responsavelInfo');
+            const responsavelId = select.value;
+
+            if (!responsavelId) {
+                infoDiv.classList.add('hidden');
+                selectedResponsavel = null;
+                return;
+            }
+
+            const responsavel = volunteers.find(v => v.id === responsavelId);
+            if (responsavel) {
+                selectedResponsavel = responsavel;
+                infoDiv.innerHTML = `
+                    <strong>Responsável Selecionado:</strong><br>
+                    <small>Nome:</small> ${responsavel.firstName} ${responsavel.lastName}<br>
+                    <small>RG:</small> ${responsavel.rg}<br>
+                    <small>Telefone:</small> ${responsavel.phone}<br>
+                    <small>Assento:</small> ${responsavel.seatNumber}
+                `;
+                infoDiv.classList.remove('hidden');
+            }
+        }
 
         // Abrir modal de assentos
         function openSeatModal() {
-            // Validar campos OBRIGATÓRIOS apenas
+            // Validar campos OBRIGATÓRIOS
             const requiredFields = ['firstName', 'lastName', 'email', 'rg', 'phone', 'birthDate'];
             
             for (let field of requiredFields) {
@@ -1038,11 +1301,15 @@
                 }
             }
 
-            // Validar idade
             const birthDate = document.getElementById('birthDate').value;
-            if (!validateAge(birthDate)) {
-                showError('É necessário ter pelo menos 18 anos para se cadastrar.');
-                return;
+
+            // Validar se menor de idade tem responsável selecionado
+            if (isMinor) {
+                if (!selectedResponsavel) {
+                    showError('Menores de idade devem ter um responsável selecionado!');
+                    document.getElementById('responsavelSelect').focus();
+                    return;
+                }
             }
 
             // Salvar dados temporariamente
@@ -1054,6 +1321,10 @@
                 cpf: document.getElementById('cpf').value || '',
                 phone: document.getElementById('phone').value,
                 birthDate: birthDate,
+                isMinor: isMinor,
+                responsavelId: isMinor ? selectedResponsavel.id : null,
+                responsavelNome: isMinor ? `${selectedResponsavel.firstName} ${selectedResponsavel.lastName}` : null,
+                responsavelAssento: isMinor ? selectedResponsavel.seatNumber : null,
                 emergencyContact: document.getElementById('emergencyContact').value.trim() || '',
                 medicalInfo: document.getElementById('medicalInfo').value.trim() || '',
                 registrationDate: new Date().toISOString()
@@ -1077,7 +1348,7 @@
             selectedSeat = null;
         }
 
-        // Renderizar assentos conforme layout das imagens
+        // Renderizar assentos
         function renderSeats() {
             const upperLeft = document.getElementById('upperLeftSeats');
             const upperRight = document.getElementById('upperRightSeats');
@@ -1089,24 +1360,13 @@
 
             const occupiedSeats = volunteers.map(v => v.seatNumber);
 
-            // DECK SUPERIOR - ESQUERDA: 3,4,7,8,9,10,11,12,13,14 (5 fileiras de 2)
-            // Ordem: 3,7,11 (coluna esquerda, cima para baixo) e 4,8,12 (coluna direita, cima para baixo)
-            // + 9,13 e 10,14 (fileiras extras)
-            
-            // Fileira 1: 3, 4
-            // Fileira 2: 7, 8  
-            // Fileira 3: 9, 10 (NOVOS)
-            // Fileira 4: 11, 12 (NOVOS)
-            // Fileira 5: 13, 14 (NOVOS)
-            
+            // DECK SUPERIOR - ESQUERDA: 3,4,7,8,9,10,11,12,13,14
             const leftSeatsOrder = [3, 4, 7, 8, 9, 10, 11, 12, 13, 14];
             leftSeatsOrder.forEach(num => {
                 createSeatElement(num, upperLeft, occupiedSeats);
             });
 
-            // DECK SUPERIOR - DIREITA: 15-48 (fileiras de 4: 2 + corredor + 2)
-            // 9 fileiras: 15-18, 19-22, 23-26, 27-30, 31-34, 35-38, 39-42, 43-46, 47-48 (última incompleta)
-            
+            // DECK SUPERIOR - DIREITA: 15-48
             for (let row = 0; row < 9; row++) {
                 const base = 15 + (row * 4);
                 const rowDiv = document.createElement('div');
@@ -1115,7 +1375,7 @@
                 const seats = [
                     { num: base },
                     { num: base + 1 },
-                    null, // corredor
+                    null,
                     { num: base + 2 },
                     { num: base + 3 }
                 ];
@@ -1134,9 +1394,7 @@
                 upperRight.appendChild(rowDiv);
             }
 
-            // DECK INFERIOR - DIREITA: 49-60 (fileiras de 3: 1 + corredor + 2)
-            // 4 fileiras: 49-51, 52-54, 55-57, 58-60
-            
+            // DECK INFERIOR - DIREITA: 49-60
             for (let row = 0; row < 4; row++) {
                 const base = 49 + (row * 3);
                 const rowDiv = document.createElement('div');
@@ -1144,7 +1402,7 @@
                 
                 const seats = [
                     { num: base },
-                    null, // corredor
+                    null,
                     { num: base + 1 },
                     { num: base + 2 }
                 ];
@@ -1211,6 +1469,11 @@
                 
                 closeSeatModal();
                 document.getElementById('volunteerForm').reset();
+                document.getElementById('responsavelSection').classList.add('hidden');
+                document.getElementById('responsavelInfo').classList.add('hidden');
+                selectedResponsavel = null;
+                isMinor = false;
+                
                 document.getElementById('successMessage').style.display = 'block';
                 
                 setTimeout(() => {
@@ -1225,19 +1488,6 @@
             }
         }
 
-        function validateAge(birthDate) {
-            const today = new Date();
-            const birth = new Date(birthDate);
-            let age = today.getFullYear() - birth.getFullYear();
-            const monthDiff = today.getMonth() - birth.getMonth();
-            
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-                age--;
-            }
-            
-            return age >= 18;
-        }
-
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
             errorDiv.textContent = message;
@@ -1247,7 +1497,8 @@
             }, 5000);
         }
 
-        // Funções Administrativas
+        // ========== FUNÇÕES DE AUTENTICAÇÃO ADMIN COM GOOGLE ==========
+
         function toggleAdminLogin() {
             const adminPanel = document.getElementById('adminPanel');
             const registrationCard = document.getElementById('registrationCard');
@@ -1256,26 +1507,96 @@
                 adminPanel.classList.remove('active');
                 registrationCard.classList.remove('hidden');
             } else {
-                adminLoginModal.classList.add('active');
+                if (currentUser && isAdmin(currentUser.email)) {
+                    showAdminPanel(currentUser.email);
+                } else {
+                    adminLoginModal.classList.add('active');
+                    document.getElementById('loginForm').style.display = 'block';
+                    document.getElementById('loadingAuth').style.display = 'none';
+                    hideMessages();
+                }
             }
         }
 
         function closeAdminLogin() {
             adminLoginModal.classList.remove('active');
-            document.getElementById('adminPassword').value = '';
-            document.getElementById('adminError').style.display = 'none';
+            hideMessages();
         }
 
-        function checkAdminPassword() {
-            const password = document.getElementById('adminPassword').value;
-            if (password === 'TiagoMandaBem') {
+        function hideMessages() {
+            document.getElementById('adminError').style.display = 'none';
+            document.getElementById('adminWarning').style.display = 'none';
+        }
+
+        function showAdminError(message) {
+            const errorDiv = document.getElementById('adminError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showAdminWarning(message) {
+            const warningDiv = document.getElementById('adminWarning');
+            warningDiv.textContent = message;
+            warningDiv.style.display = 'block';
+        }
+
+        async function loginWithGoogle() {
+            hideMessages();
+            
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('loadingAuth').style.display = 'block';
+
+            try {
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+                
+                // Verificar se o email está na lista de admins
+                if (!isAdmin(user.email)) {
+                    // Não é admin, fazer logout e mostrar erro
+                    await auth.signOut();
+                    currentUser = null;
+                    
+                    document.getElementById('loginForm').style.display = 'block';
+                    document.getElementById('loadingAuth').style.display = 'none';
+                    showAdminError(`O email ${user.email} não tem permissão de administrador.`);
+                    return;
+                }
+
+                // É admin, mostrar painel
                 closeAdminLogin();
-                document.getElementById('adminPanel').classList.add('active');
-                document.getElementById('registrationCard').classList.add('hidden');
-                renderAdminPanel();
-            } else {
-                document.getElementById('adminError').textContent = 'Senha incorreta!';
-                document.getElementById('adminError').style.display = 'block';
+                showAdminPanel(user.email);
+                
+            } catch (error) {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('loadingAuth').style.display = 'none';
+                
+                let errorMessage = 'Erro ao fazer login com Google.';
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage = 'Login cancelado. Você fechou a janela do Google.';
+                } else if (error.code === 'auth/popup-blocked') {
+                    errorMessage = 'Popup bloqueado pelo navegador. Permita popups para este site.';
+                }
+                showAdminError(errorMessage);
+            }
+        }
+
+        function showAdminPanel(email) {
+            document.getElementById('adminUserEmail').textContent = email;
+            document.getElementById('adminPanel').classList.add('active');
+            document.getElementById('registrationCard').classList.add('hidden');
+            renderAdminPanel();
+        }
+
+        async function logoutAdmin() {
+            try {
+                await auth.signOut();
+                currentUser = null;
+                document.getElementById('adminPanel').classList.remove('active');
+                document.getElementById('registrationCard').classList.remove('hidden');
+            } catch (error) {
+                console.error('Erro ao sair:', error);
             }
         }
 
@@ -1289,10 +1610,19 @@
             const sorted = [...volunteers].sort((a, b) => a.seatNumber - b.seatNumber);
 
             sorted.forEach(v => {
+                let responsavelInfo = '';
+                if (v.isMinor && v.responsavelNome) {
+                    responsavelInfo = `<br><small style="color: var(--warning);">👤 Resp: ${v.responsavelNome} (Ass. ${v.responsavelAssento})</small>`;
+                }
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong style="color: var(--primary); font-size: 1.1rem;">${v.seatNumber}</strong></td>
-                    <td>${v.firstName} ${v.lastName}</td>
+                    <td>
+                        ${v.firstName} ${v.lastName}
+                        ${v.isMinor ? '<span style="color: var(--warning); font-size: 0.8rem;"> (Menor)</span>' : ''}
+                        ${responsavelInfo}
+                    </td>
                     <td>${v.rg}</td>
                     <td>${v.cpf || '-'}</td>
                     <td>${v.phone}</td>
@@ -1348,6 +1678,10 @@
         function updateInterface() {
             if (document.getElementById('adminPanel').classList.contains('active')) {
                 renderAdminPanel();
+            }
+            // Se o formulário estiver aberto e for menor, atualizar lista de responsáveis
+            if (isMinor && !document.getElementById('responsavelSection').classList.contains('hidden')) {
+                updateResponsaveisList();
             }
         }
 
