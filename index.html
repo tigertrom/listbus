@@ -1133,7 +1133,7 @@
         // Função para verificar se email é admin (buscando no Firestore)
         async function checkIfAdmin(email) {
             try {
-                const adminDoc = await db.collection('admins').doc(email).get();
+                const adminDoc = await db.collection('admins_listbusy').doc(email).get();
                 if (adminDoc.exists) {
                     const data = adminDoc.data();
                     // Verifica se o campo "regra" é "admin" ou "administrador"
