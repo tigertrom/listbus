@@ -814,7 +814,6 @@
                 grid-template-columns: 55px 30px 55px 55px;
             }
             
-            
             .seat {
                 min-height: 50px;
                 font-size: 0.9rem;
@@ -1106,14 +1105,6 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // LISTA DE EMAILS ADMINISTRADORES AUTORIZADOS (Google)
-        // Adicione aqui os emails Google que podem acessar o painel administrativo
-        const ADMIN_EMAILS = [
-            'tigertrom@gmail.com',           // Substitua pelo seu email real do Google
-            'tiagoteste.86@gmail.com',               // Outro admin
-            // Adicione mais emails conforme necessário
-        ];
-
         // Variáveis globais
         let volunteers = [];
         let selectedSeat = null;
@@ -1129,15 +1120,30 @@
         // Verificar estado de autenticação ao carregar
         auth.onAuthStateChanged((user) => {
             currentUser = user;
-            if (user && isAdmin(user.email)) {
-                // Usuário já está logado e é admin
-                showAdminPanel(user.email);
+            if (user) {
+                // Verificar se é admin no Firestore
+                checkIfAdmin(user.email).then(isAdmin => {
+                    if (isAdmin) {
+                        showAdminPanel(user.email);
+                    }
+                });
             }
         });
 
-        // Função para verificar se email é admin
-        function isAdmin(email) {
-            return ADMIN_EMAILS.includes(email.toLowerCase());
+        // Função para verificar se email é admin (buscando no Firestore)
+        async function checkIfAdmin(email) {
+            try {
+                const adminDoc = await db.collection('admins').doc(email).get();
+                if (adminDoc.exists) {
+                    const data = adminDoc.data();
+                    // Verifica se o campo "regra" é "admin" ou "administrador"
+                    return data.regra === 'admin' || data.regra === 'administrador';
+                }
+                return false;
+            } catch (error) {
+                console.error('Erro ao verificar admin:', error);
+                return false;
+            }
         }
 
         // Máscaras de input
@@ -1183,7 +1189,7 @@
                 volunteers.push({ id: doc.id, ...doc.data() });
             });
             updateInterface();
-            updateResponsaveisList(); // Atualizar lista de responsáveis para menores
+            updateResponsaveisList();
         });
 
         // Verificar idade e mostrar campo de responsável se necessário
@@ -1231,12 +1237,10 @@
             const select = document.getElementById('responsavelSelect');
             const currentValue = select.value;
             
-            // Limpar opções exceto a primeira
             while (select.options.length > 1) {
                 select.remove(1);
             }
 
-            // Filtrar apenas maiores de idade já cadastrados
             const responsaveis = volunteers.filter(v => {
                 const age = calculateAge(v.birthDate);
                 return age >= 18;
@@ -1249,7 +1253,6 @@
                 select.appendChild(option);
             });
 
-            // Restaurar seleção anterior se ainda existir
             if (currentValue) {
                 select.value = currentValue;
             }
@@ -1282,7 +1285,6 @@
 
         // Abrir modal de assentos
         function openSeatModal() {
-            // Validar campos OBRIGATÓRIOS
             const requiredFields = ['firstName', 'lastName', 'email', 'rg', 'phone', 'birthDate'];
             
             for (let field of requiredFields) {
@@ -1303,7 +1305,6 @@
 
             const birthDate = document.getElementById('birthDate').value;
 
-            // Validar se menor de idade tem responsável selecionado
             if (isMinor) {
                 if (!selectedResponsavel) {
                     showError('Menores de idade devem ter um responsável selecionado!');
@@ -1312,7 +1313,6 @@
                 }
             }
 
-            // Salvar dados temporariamente
             tempFormData = {
                 firstName: document.getElementById('firstName').value.trim(),
                 lastName: document.getElementById('lastName').value.trim(),
@@ -1330,7 +1330,6 @@
                 registrationDate: new Date().toISOString()
             };
 
-            // Verificar se email já existe
             if (volunteers.some(v => v.email === tempFormData.email)) {
                 showError('Este email já está cadastrado!');
                 return;
@@ -1360,13 +1359,11 @@
 
             const occupiedSeats = volunteers.map(v => v.seatNumber);
 
-            // DECK SUPERIOR - ESQUERDA: 3,4,7,8,9,10,11,12,13,14
             const leftSeatsOrder = [3, 4, 7, 8, 9, 10, 11, 12, 13, 14];
             leftSeatsOrder.forEach(num => {
                 createSeatElement(num, upperLeft, occupiedSeats);
             });
 
-            // DECK SUPERIOR - DIREITA: 15-48
             for (let row = 0; row < 9; row++) {
                 const base = 15 + (row * 4);
                 const rowDiv = document.createElement('div');
@@ -1394,7 +1391,6 @@
                 upperRight.appendChild(rowDiv);
             }
 
-            // DECK INFERIOR - DIREITA: 49-60
             for (let row = 0; row < 4; row++) {
                 const base = 49 + (row * 3);
                 const rowDiv = document.createElement('div');
@@ -1507,8 +1503,17 @@
                 adminPanel.classList.remove('active');
                 registrationCard.classList.remove('hidden');
             } else {
-                if (currentUser && isAdmin(currentUser.email)) {
-                    showAdminPanel(currentUser.email);
+                if (currentUser) {
+                    checkIfAdmin(currentUser.email).then(isAdmin => {
+                        if (isAdmin) {
+                            showAdminPanel(currentUser.email);
+                        } else {
+                            adminLoginModal.classList.add('active');
+                            document.getElementById('loginForm').style.display = 'block';
+                            document.getElementById('loadingAuth').style.display = 'none';
+                            hideMessages();
+                        }
+                    });
                 } else {
                     adminLoginModal.classList.add('active');
                     document.getElementById('loginForm').style.display = 'block';
@@ -1552,9 +1557,10 @@
                 const result = await auth.signInWithPopup(provider);
                 const user = result.user;
                 
-                // Verificar se o email está na lista de admins
-                if (!isAdmin(user.email)) {
-                    // Não é admin, fazer logout e mostrar erro
+                // Verificar no Firestore se é admin
+                const isAdminUser = await checkIfAdmin(user.email);
+                
+                if (!isAdminUser) {
                     await auth.signOut();
                     currentUser = null;
                     
@@ -1564,7 +1570,6 @@
                     return;
                 }
 
-                // É admin, mostrar painel
                 closeAdminLogin();
                 showAdminPanel(user.email);
                 
@@ -1679,7 +1684,6 @@
             if (document.getElementById('adminPanel').classList.contains('active')) {
                 renderAdminPanel();
             }
-            // Se o formulário estiver aberto e for menor, atualizar lista de responsáveis
             if (isMinor && !document.getElementById('responsavelSection').classList.contains('hidden')) {
                 updateResponsaveisList();
             }
