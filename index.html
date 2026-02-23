@@ -47,15 +47,15 @@
             margin: 0 auto;
             padding: 20px;
         }
-        /*Este campo que configura a div headsind para ajustar a imagem automaticamente.*/
+        
         headsind {
-            border-radius: 8px; /* Ajustei de 0.5px para 8px para ser visível */
-            padding: 0;         /* Padding pode causar bordas brancas se a imagem for cover */
+            border-radius: 8px;
+            padding: 0;
             box-shadow: var(--shadow-lg);
             animation: fadeInUp 0.8s ease;
             max-width: 1100px;
             margin: 0 auto;
-            overflow: hidden;   /* Garante que a imagem respeite o border-radius da div */
+            overflow: hidden;
             max-height: 510px;
         }
 
@@ -216,7 +216,6 @@
             justify-content: center;
         }
 
-        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -296,7 +295,6 @@
             padding: 30px;
         }
 
-        /* Bus Layout */
         .bus-wrapper {
             background: var(--gray-100);
             border-radius: 50px 50px 20px 20px;
@@ -569,7 +567,6 @@
             color: #1e3a8a;
         }
 
-        /* Admin Panel */
         .admin-login {
             position: fixed;
             top: 20px;
@@ -1122,9 +1119,9 @@
 
         // CONFIGURAÇÃO EMAILJS - SUBSTITUA COM SEUS DADOS
         const EMAILJS_CONFIG = {
-            PUBLIC_KEY: "yAhHSrw1TBS9kzOBr",      // Substitua pelo seu Public Key do EmailJS
-            SERVICE_ID: "service_ikc4rr8",      // Substitua pelo seu Service ID do EmailJS
-            TEMPLATE_ID: "template_mre74xq"     // Substitua pelo seu Template ID do EmailJS
+            PUBLIC_KEY: "yAhHSrw1TBS9kzOBr",
+            SERVICE_ID: "service_ikc4rr8",
+            TEMPLATE_ID: "template_mre74xq"
         };
 
         // Inicializar Firebase
@@ -1153,7 +1150,6 @@
         auth.onAuthStateChanged((user) => {
             currentUser = user;
             if (user) {
-                // Verificar se é admin no Firestore
                 checkIfAdmin(user.email).then(isAdmin => {
                     if (isAdmin) {
                         showAdminPanel(user.email);
@@ -1162,13 +1158,12 @@
             }
         });
 
-        // Função para verificar se email é admin (buscando no Firestore)
+        // Função para verificar se email é admin
         async function checkIfAdmin(email) {
             try {
                 const adminDoc = await db.collection('admins_listbusy').doc(email).get();
                 if (adminDoc.exists) {
                     const data = adminDoc.data();
-                    // Verifica se o campo "regra" é "admin" ou "administrador"
                     return data.regra === 'admin' || data.regra === 'administrador';
                 }
                 return false;
@@ -1264,7 +1259,7 @@
             return calculateAge(birthDate) >= 18;
         }
 
-        // Atualizar lista de responsáveis (maiores de idade já cadastrados)
+        // Atualizar lista de responsáveis
         function updateResponsaveisList() {
             const select = document.getElementById('responsavelSelect');
             const currentValue = select.value;
@@ -1478,43 +1473,55 @@
         // ==========================================
         // FUNÇÃO PARA ENVIAR EMAIL DE CONFIRMAÇÃO
         // ==========================================
-async function sendConfirmationEmail(formData, seatNumber) {
-    try {
-        const templateParams = {
-            to_email: formData.email,
-            nome: `${formData.firstName} ${formData.lastName}`,
-            assento: seatNumber
-        };
+        async function sendConfirmationEmail(formData, seatNumber) {
+            try {
+                const templateParams = {
+                    to_email: formData.email,
+                    nome: `${formData.firstName} ${formData.lastName}`,
+                    assento: seatNumber
+                };
 
-        const response = await emailjs.send(
-            EMAILJS_CONFIG.SERVICE_ID,
-            EMAILJS_CONFIG.TEMPLATE_ID,
-            templateParams
-        );
+                const response = await emailjs.send(
+                    EMAILJS_CONFIG.SERVICE_ID,
+                    EMAILJS_CONFIG.TEMPLATE_ID,
+                    templateParams
+                );
 
-        console.log('Email enviado com sucesso:', response);
-        return true;
-    } catch (error) {
-        console.error('Erro ao enviar email:', error);
-        return false;
-    }
-}
-
-        // Funções auxiliares para formatação de data
-        function formatDateBR(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('pt-BR');
+                console.log('Email enviado com sucesso:', response);
+                return true;
+            } catch (error) {
+                console.error('Erro ao enviar email:', error);
+                return false;
+            }
         }
 
-        function formatDateTimeBR(date) {
-            return date.toLocaleString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+        // ==========================================
+        // FUNÇÃO PARA ENVIAR EMAIL DE TROCA DE ASSENTO
+        // ==========================================
+        async function sendSeatChangeEmail(volunteer, oldSeat, newSeat) {
+            try {
+                const templateParams = {
+                    to_email: volunteer.email,
+                    nome: `${volunteer.firstName} ${volunteer.lastName}`,
+                    assento: newSeat,
+                    mensagem_adicional: `Seu assento foi alterado pelo administrador.<br><br>
+                    <strong>Assento anterior:</strong> Nº ${oldSeat}<br>
+                    <strong>Novo assento:</strong> Nº ${newSeat}<br><br>
+                    Por favor, guarde esta nova confirmação e apresente-a no dia da viagem.`
+                };
+
+                const response = await emailjs.send(
+                    EMAILJS_CONFIG.SERVICE_ID,
+                    EMAILJS_CONFIG.TEMPLATE_ID,
+                    templateParams
+                );
+
+                console.log('Email de troca enviado com sucesso:', response);
+                return true;
+            } catch (error) {
+                console.error('Erro ao enviar email de troca:', error);
+                return false;
+            }
         }
 
         async function confirmSeatSelection() {
@@ -1530,13 +1537,10 @@ async function sendConfirmationEmail(formData, seatNumber) {
             };
 
             try {
-                // 1. Salvar no Firebase
                 await db.collection('volunteers').add(formData);
                 
-                // 2. Enviar email de confirmação
                 const emailSent = await sendConfirmationEmail(formData, selectedSeat);
                 
-                // 3. Fechar modal e limpar formulário
                 closeSeatModal();
                 document.getElementById('volunteerForm').reset();
                 document.getElementById('responsavelSection').classList.add('hidden');
@@ -1544,7 +1548,6 @@ async function sendConfirmationEmail(formData, seatNumber) {
                 selectedResponsavel = null;
                 isMinor = false;
                 
-                // 4. Mostrar mensagem de sucesso
                 const successMessage = document.getElementById('successMessage');
                 if (emailSent) {
                     successMessage.innerHTML = '✅ Cadastro realizado com sucesso! Um email de confirmação foi enviado para ' + formData.email;
@@ -1638,7 +1641,6 @@ async function sendConfirmationEmail(formData, seatNumber) {
                 const result = await auth.signInWithPopup(provider);
                 const user = result.user;
                 
-                // Verificar no Firestore se é admin
                 const isAdminUser = await checkIfAdmin(user.email);
                 
                 if (!isAdminUser) {
@@ -1735,6 +1737,9 @@ async function sendConfirmationEmail(formData, seatNumber) {
             }
         }
 
+        // ==========================================
+        // FUNÇÃO CHANGE SEAT ATUALIZADA COM EMAIL
+        // ==========================================
         async function changeSeat(id) {
             const volunteer = volunteers.find(v => v.id === id);
             if (!volunteer) return;
@@ -1753,11 +1758,24 @@ async function sendConfirmationEmail(formData, seatNumber) {
                 return;
             }
 
+            const oldSeat = volunteer.seatNumber;
+
             try {
+                // Atualizar no Firebase
                 await db.collection('volunteers').doc(id).update({ seatNumber: seatNum });
-                alert(`Assento alterado com sucesso! ${volunteer.firstName} agora está no assento ${seatNum}.`);
+                
+                // Enviar email de notificação sobre a troca
+                const emailSent = await sendSeatChangeEmail(volunteer, oldSeat, seatNum);
+                
+                if (emailSent) {
+                    alert(`Assento alterado com sucesso! ${volunteer.firstName} agora está no assento ${seatNum}.\n\nUm email de confirmação foi enviado para ${volunteer.email}.`);
+                } else {
+                    alert(`Assento alterado com sucesso! ${volunteer.firstName} agora está no assento ${seatNum}.\n\n⚠️ Não foi possível enviar o email de notificação, mas a alteração foi salva.`);
+                }
+                
             } catch (error) {
-                alert('Erro ao alterar assento');
+                console.error('Erro ao alterar assento:', error);
+                alert('Erro ao alterar assento. Tente novamente.');
             }
         }
 
