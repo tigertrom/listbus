@@ -8,6 +8,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -1089,6 +1091,10 @@
     </div>
 
     <script>
+        // ==========================================
+        // CONFIGURAÇÃO - SUBSTITUA COM SEUS DADOS
+        // ==========================================
+        
         // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAB7cZcS77JnchllAtITu1JS2tMDLON8SI",
@@ -1100,10 +1106,22 @@
             measurementId: "G-RV0R8LM73P"
         };
 
+        // CONFIGURAÇÃO EMAILJS - SUBSTITUA COM SEUS DADOS
+        const EMAILJS_CONFIG = {
+            PUBLIC_KEY: "yAhHSrw1TBS9kzOBr",      // Substitua pelo seu Public Key do EmailJS
+            SERVICE_ID: "service_ikc4rr8",      // Substitua pelo seu Service ID do EmailJS
+            TEMPLATE_ID: "template_mre74xq"     // Substitua pelo seu Template ID do EmailJS
+        };
+
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+
+        // Inicializar EmailJS
+        (function() {
+            emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+        })();
 
         // Variáveis globais
         let volunteers = [];
@@ -1330,11 +1348,6 @@
                 registrationDate: new Date().toISOString()
             };
 
-            if (volunteers.some(v => v.email === tempFormData.email)) {
-                showError('Este email já está cadastrado!');
-                return;
-            }
-
             renderSeats();
             seatModal.classList.add('active');
             selectedSeat = null;
@@ -1448,6 +1461,48 @@
             document.getElementById('selectedSeatDisplay').textContent = selectedSeat;
         }
 
+        // ==========================================
+        // FUNÇÃO PARA ENVIAR EMAIL DE CONFIRMAÇÃO
+        // ==========================================
+async function sendConfirmationEmail(formData, seatNumber) {
+    try {
+        const templateParams = {
+            to_email: formData.email,
+            nome: `${formData.firstName} ${formData.lastName}`,
+            assento: seatNumber
+        };
+
+        const response = await emailjs.send(
+            EMAILJS_CONFIG.SERVICE_ID,
+            EMAILJS_CONFIG.TEMPLATE_ID,
+            templateParams
+        );
+
+        console.log('Email enviado com sucesso:', response);
+        return true;
+    } catch (error) {
+        console.error('Erro ao enviar email:', error);
+        return false;
+    }
+}
+
+        // Funções auxiliares para formatação de data
+        function formatDateBR(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function formatDateTimeBR(date) {
+            return date.toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
         async function confirmSeatSelection() {
             if (!selectedSeat || !tempFormData) return;
 
@@ -1461,8 +1516,13 @@
             };
 
             try {
+                // 1. Salvar no Firebase
                 await db.collection('volunteers').add(formData);
                 
+                // 2. Enviar email de confirmação
+                const emailSent = await sendConfirmationEmail(formData, selectedSeat);
+                
+                // 3. Fechar modal e limpar formulário
                 closeSeatModal();
                 document.getElementById('volunteerForm').reset();
                 document.getElementById('responsavelSection').classList.add('hidden');
@@ -1470,11 +1530,18 @@
                 selectedResponsavel = null;
                 isMinor = false;
                 
-                document.getElementById('successMessage').style.display = 'block';
+                // 4. Mostrar mensagem de sucesso
+                const successMessage = document.getElementById('successMessage');
+                if (emailSent) {
+                    successMessage.innerHTML = '✅ Cadastro realizado com sucesso! Um email de confirmação foi enviado para ' + formData.email;
+                } else {
+                    successMessage.innerHTML = '✅ Cadastro realizado com sucesso! <br><small>(Não foi possível enviar o email de confirmação, mas seu cadastro foi salvo)</small>';
+                }
+                successMessage.style.display = 'block';
                 
                 setTimeout(() => {
-                    document.getElementById('successMessage').style.display = 'none';
-                }, 5000);
+                    successMessage.style.display = 'none';
+                }, 8000);
 
             } catch (error) {
                 showError('Erro ao salvar cadastro. Tente novamente.');
