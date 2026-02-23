@@ -47,6 +47,17 @@
             margin: 0 auto;
             padding: 20px;
         }
+        /*Este campo que configura a div headsind para ajustar a imagem automaticamente.*/
+        .headsind {
+            border-radius: 8px; /* Ajustei de 0.5px para 8px para ser visível */
+            padding: 0;         /* Padding pode causar bordas brancas se a imagem for cover */
+            box-shadow: var(--shadow-lg);
+            animation: fadeInUp 0.8s ease;
+            max-width: 600px;
+            margin: 0 auto;
+            overflow: hidden;   /* Garante que a imagem respeite o border-radius da div */
+            height: 280px;
+        }
 
         header {
             text-align: center;
