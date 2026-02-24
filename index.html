@@ -1121,7 +1121,8 @@
         const EMAILJS_CONFIG = {
             PUBLIC_KEY: "yAhHSrw1TBS9kzOBr",
             SERVICE_ID: "service_ikc4rr8",
-            TEMPLATE_ID: "template_mre74xq"
+            TEMPLATE_ID: "template_xqafz91",           // Template de cadastro/Confirmação
+            TEMPLATE_CHANGE_ID: "template_mre74xq"     // Template de alteração de assento
         };
 
         // Inicializar Firebase
@@ -1504,22 +1505,19 @@
                     to_email: volunteer.email,
                     nome: `${volunteer.firstName} ${volunteer.lastName}`,
                     assento: newSeat,
-                    mensagem_adicional: `Seu assento foi alterado pelo administrador.<br><br>
-                    <strong>Assento anterior:</strong> Nº ${oldSeat}<br>
-                    <strong>Novo assento:</strong> Nº ${newSeat}<br><br>
-                    Por favor, guarde esta nova confirmação e apresente-a no dia da viagem.`
+                    assento_anterior: oldSeat
                 };
 
                 const response = await emailjs.send(
                     EMAILJS_CONFIG.SERVICE_ID,
-                    EMAILJS_CONFIG.TEMPLATE_ID,
+                    EMAILJS_CONFIG.TEMPLATE_CHANGE_ID,  // USA O TEMPLATE DE ALTERAÇÃO
                     templateParams
                 );
 
-                console.log('Email de troca enviado com sucesso:', response);
+                console.log('Email de alteração enviado com sucesso:', response);
                 return true;
             } catch (error) {
-                console.error('Erro ao enviar email de troca:', error);
+                console.error('Erro ao enviar email de alteração:', error);
                 return false;
             }
         }
