@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área Administrativa - Voluntariado</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- Scripts compartilhados -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <style>
+        /* CSS específico do admin - pode ser mais limpo */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --white: #ffffff;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .back-link {
+            margin-bottom: 20px;
+        }
+
+        .back-link a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .admin-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .admin-header h1 {
+            color: var(--gray-800);
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--gray-100) 0%, var(--white) 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid var(--gray-200);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 1rem;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .volunteers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .volunteers-table th,
+        .volunteers-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .volunteers-table th {
+            background: var(--gray-100);
+            font-weight: 700;
+            color: var(--gray-800);
+            position: sticky;
+            top: 0;
+        }
+
+        .volunteers-table tr:hover {
+            background: var(--gray-50);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--gray-600);
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--white);
+        }
+
+        .login-prompt button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            background: white;
+            color: var(--primary);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .volunteers-table {
+                font-size: 0.8rem;
+            }
+            
+            .volunteers-table th,
+            .volunteers-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de loading inicial -->
+    <div id="loadingScreen" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Tela de login (mostrada se não autenticado) -->
+    <div id="loginScreen" class="hidden" style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+        <div class="login-prompt">
+            <h1>🔐 Área Administrativa</h1>
+            <p>Acesso restrito a administradores autorizados.</p>
+            <button onclick="handleLogin()">
+                <span>🔑</span> Entrar com Google
+            </button>
+            <br><br>
+            <a href="index.html" style="color: white; opacity: 0.8;">← Voltar ao cadastro</a>
+        </div>
+    </div>
+
+    <!-- Conteúdo do admin (mostrado após autenticação) -->
+    <div id="adminContent" class="hidden">
+        <div class="container">
+            <div class="back-link">
+                <a href="index.html">← Voltar ao cadastro</a>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-header">
+                    <h1>📊 Painel Administrativo</h1>
+                    <div class="user-info">
+                        <span id="userEmail">admin@exemplo.com</span>
+                        <button class="btn btn-secondary" onclick="logoutAdmin()">Sair</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalSeats">60</div>
+                        <div class="stat-label">Total de Assentos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="occupiedSeats">0</div>
+                        <div class="stat-label">Ocupados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="availableSeats">60</div>
+                        <div class="stat-label">Disponíveis</div>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="volunteers-table">
+                        <thead>
+                            <tr>
+                                <th>Assento</th>
+                                <th>Nome</th>
+                                <th>RG</th>
+                                <th>Telefone</th>
+                                <th>Email</th>
+                                <th>Data Nasc.</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="volunteersList">
+                            <!-- Preenchido via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // LÓGICA DA PÁGINA ADMIN - admin.html
+        // ==========================================
+        
+        let volunteers = [];
+        let currentUser = null;
+
+        // Verificar autenticação ao carregar
+        window.addEventListener('load', () => {
+            checkAuthState((user) => {
+                currentUser = user;
+                document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('adminContent').classList.remove('hidden');
+                initAdmin();
+            });
+        });
+
+        // Se não estiver autenticado, mostra tela de login
+        auth.onAuthStateChanged((user) => {
+            if (!user && document.getElementById('loadingScreen')) {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+            }
+        });
+
+        async function handleLogin() {
+            const user = await loginWithGoogle();
+            if (user) {
+                window.location.reload(); // Recarrega para entrar no admin
+            }
+        }
+
+        function initAdmin() {
+            // Carregar voluntários em tempo real
+            db.collection('volunteers').onSnapshot((snapshot) => {
+                volunteers = [];
+                snapshot.forEach((doc) => {
+                    volunteers.push({ id: doc.id, ...doc.data() });
+                });
+                renderTable();
+            });
+        }
+
+        function renderTable() {
+            document.getElementById('occupiedSeats').textContent = volunteers.length;
+            document.getElementById('availableSeats').textContent = 60 - volunteers.length;
+
+            const tbody = document.getElementById('volunteersList');
+            tbody.innerHTML = '';
+
+            const sorted = [...volunteers].sort((a, b) => a.seatNumber - b.seatNumber);
+
+            sorted.forEach(v => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong style="color: var(--primary); font-size: 1.2rem;">${v.seatNumber}</strong></td>
+                    <td>
+                        ${v.firstName} ${v.lastName}
+                        ${v.isMinor ? '<span style="color: var(--warning);"> (Menor)</span>' : ''}
+                    </td>
+                    <td>${v.rg}</td>
+                    <td>${v.phone}</td>
+                    <td>${v.email}</td>
+                    <td>${formatDateBR(v.birthDate)}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-secondary" onclick="changeSeat('${v.id}')">Mover</button>
+                            <button class="btn btn-danger" onclick="deleteVolunteer('${v.id}')">Remover</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function deleteVolunteer(id) {
+            if (!confirm('Tem certeza que deseja remover este voluntário?')) return;
+            
+            try {
+                await db.collection('volunteers').doc(id).delete();
+            } catch (error) {
+                alert('Erro ao remover voluntário');
+            }
+        }
+
+        async function changeSeat(id) {
+            const volunteer = volunteers.find(v => v.id === id);
+            if (!volunteer) return;
+
+            const newSeat = prompt(
+                `Mover ${volunteer.firstName} ${volunteer.lastName}\n` +
+                `Assento atual: ${volunteer.seatNumber}\n\n` +
+                `Digite o novo assento (1-60):`
+            );
+            
+            if (!newSeat) return;
+
+            const seatNum = parseInt(newSeat);
+            if (isNaN(seatNum) || seatNum < 1 || seatNum > 60) {
+                alert('Assento inválido!');
+                return;
+            }
+
+            if (volunteers.some(v => v.seatNumber === seatNum && v.id !== id)) {
+                alert('Assento já ocupado!');
+                return;
+            }
+
+            const oldSeat = volunteer.seatNumber;
+
+            try {
+                await db.collection('volunteers').doc(id).update({ seatNumber: seatNum });
+                
+                // Enviar email de notificação
+                const emailSent = await sendSeatChangeEmail(volunteer, oldSeat, seatNum);
+                
+                if (emailSent) {
+                    alert(`✅ Assento alterado!\nEmail enviado para ${volunteer.email}`);
+                } else {
+                    alert(`⚠️ Assento alterado, mas não foi possível enviar o email.`);
+                }
+            } catch (error) {
+                alert('Erro ao alterar assento');
+            }
+        }
+
+        async function sendSeatChangeEmail(volunteer, oldSeat, newSeat) {
+            try {
+                const templateParams = {
+                    to_email: volunteer.email,
+                    nome: `${volunteer.firstName} ${volunteer.lastName}`,
+                    assento: newSeat,
+                    assento_anterior: oldSeat
+                };
+
+                await emailjs.send(
+                    EMAILJS_CONFIG.SERVICE_ID,
+                    EMAILJS_CONFIG.TEMPLATE_CHANGE_ID,
+                    templateParams
+                );
+                return true;
+            } catch (error) {
+                console.error('Erro ao enviar email:', error);
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>
