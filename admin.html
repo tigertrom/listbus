@@ -13,11 +13,13 @@
     <!-- Scripts compartilhados -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/auth.js"></script>
     
     <style>
-        /* CSS específico do admin - pode ser mais limpo */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
         :root {
             --primary: #2563eb;
@@ -27,6 +29,7 @@
             --warning: #f59e0b;
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
             --gray-600: #4b5563;
             --gray-800: #1f2937;
             --white: #ffffff;
@@ -57,6 +60,11 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
+            transition: opacity 0.3s;
+        }
+
+        .back-link a:hover {
+            opacity: 0.8;
         }
 
         .admin-card {
@@ -87,6 +95,7 @@
             display: flex;
             align-items: center;
             gap: 20px;
+            flex-wrap: wrap;
         }
 
         .stats-grid {
@@ -176,6 +185,7 @@
         .action-btns {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .loading-overlay {
@@ -208,10 +218,25 @@
             text-align: center;
             padding: 60px 20px;
             color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-prompt h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .login-prompt p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
         }
 
         .login-prompt button {
-            margin-top: 20px;
             padding: 15px 30px;
             font-size: 1.1rem;
             background: white;
@@ -220,6 +245,18 @@
             border-radius: 10px;
             cursor: pointer;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.3s;
+        }
+
+        .login-prompt button:hover {
+            transform: translateY(-2px);
+        }
+
+        .hidden {
+            display: none !important;
         }
 
         @media (max-width: 768px) {
@@ -236,6 +273,10 @@
             .volunteers-table td {
                 padding: 8px;
             }
+
+            .action-btns {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -246,7 +287,7 @@
     </div>
 
     <!-- Tela de login (mostrada se não autenticado) -->
-    <div id="loginScreen" class="hidden" style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div id="loginScreen" class="hidden">
         <div class="login-prompt">
             <h1>🔐 Área Administrativa</h1>
             <p>Acesso restrito a administradores autorizados.</p>
@@ -254,7 +295,7 @@
                 <span>🔑</span> Entrar com Google
             </button>
             <br><br>
-            <a href="index.html" style="color: white; opacity: 0.8;">← Voltar ao cadastro</a>
+            <a href="index.html" style="color: white; opacity: 0.8; text-decoration: none;">← Voltar ao cadastro</a>
         </div>
     </div>
 
@@ -319,32 +360,99 @@
         let volunteers = [];
         let currentUser = null;
 
-        // Verificar autenticação ao carregar
-        window.addEventListener('load', () => {
-            checkAuthState((user) => {
-                currentUser = user;
-                document.getElementById('userEmail').textContent = user.email;
-                document.getElementById('loadingScreen').classList.add('hidden');
-                document.getElementById('adminContent').classList.remove('hidden');
-                initAdmin();
-            });
-        });
-
-        // Se não estiver autenticado, mostra tela de login
-        auth.onAuthStateChanged((user) => {
-            if (!user && document.getElementById('loadingScreen')) {
-                document.getElementById('loadingScreen').classList.add('hidden');
-                document.getElementById('loginScreen').classList.remove('hidden');
-            }
-        });
-
-        async function handleLogin() {
-            const user = await loginWithGoogle();
-            if (user) {
-                window.location.reload(); // Recarrega para entrar no admin
+        // ==========================================
+        // FUNÇÕES DE AUTENTICAÇÃO (definidas localmente)
+        // ==========================================
+        
+        // Verificar se é admin
+        async function checkIfAdmin(email) {
+            try {
+                const adminDoc = await db.collection('admins_listbusy').doc(email).get();
+                if (adminDoc.exists) {
+                    const data = adminDoc.data();
+                    return data.regra === 'admin' || data.regra === 'administrador';
+                }
+                return false;
+            } catch (error) {
+                console.error('Erro ao verificar admin:', error);
+                return false;
             }
         }
 
+        // Login com Google
+        async function handleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            try {
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+                
+                const isAdminUser = await checkIfAdmin(user.email);
+                
+                if (!isAdminUser) {
+                    await auth.signOut();
+                    alert(`O email ${user.email} não tem permissão de administrador.`);
+                    return;
+                }
+
+                // Se é admin, recarrega a página para mostrar o painel
+                window.location.reload();
+                
+            } catch (error) {
+                let errorMessage = 'Erro ao fazer login com Google.';
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage = 'Login cancelado. Você fechou a janela do Google.';
+                } else if (error.code === 'auth/popup-blocked') {
+                    errorMessage = 'Popup bloqueado pelo navegador. Permita popups para este site.';
+                }
+                alert(errorMessage);
+            }
+        }
+
+        // Logout
+        async function logoutAdmin() {
+            try {
+                await auth.signOut();
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Erro ao sair:', error);
+            }
+        }
+
+        // Verificar estado de autenticação ao carregar
+        function initAuth() {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    // Usuário está logado, verifica se é admin
+                    const isAdmin = await checkIfAdmin(user.email);
+                    
+                    if (isAdmin) {
+                        // É admin, mostra o painel
+                        currentUser = user;
+                        document.getElementById('userEmail').textContent = user.email;
+                        document.getElementById('loadingScreen').classList.add('hidden');
+                        document.getElementById('loginScreen').classList.add('hidden');
+                        document.getElementById('adminContent').classList.remove('hidden');
+                        initAdmin();
+                    } else {
+                        // Não é admin, faz logout e mostra login
+                        await auth.signOut();
+                        document.getElementById('loadingScreen').classList.add('hidden');
+                        document.getElementById('loginScreen').classList.remove('hidden');
+                        alert('Você não tem permissão de administrador.');
+                    }
+                } else {
+                    // Não está logado, mostra tela de login
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                }
+            });
+        }
+
+        // ==========================================
+        // FUNÇÕES DO PAINEL ADMIN
+        // ==========================================
+        
         function initAdmin() {
             // Carregar voluntários em tempo real
             db.collection('volunteers').onSnapshot((snapshot) => {
@@ -371,7 +479,7 @@
                     <td><strong style="color: var(--primary); font-size: 1.2rem;">${v.seatNumber}</strong></td>
                     <td>
                         ${v.firstName} ${v.lastName}
-                        ${v.isMinor ? '<span style="color: var(--warning);"> (Menor)</span>' : ''}
+                        ${v.isMinor ? '<span style="color: var(--warning); font-size: 0.8rem;"> (Menor)</span>' : ''}
                     </td>
                     <td>${v.rg}</td>
                     <td>${v.phone}</td>
@@ -389,7 +497,7 @@
         }
 
         async function deleteVolunteer(id) {
-            if (!confirm('Tem certeza que deseja remover este voluntário?')) return;
+            if (!confirm('Tem certeza que deseja remover este voluntário? O assento será liberado.')) return;
             
             try {
                 await db.collection('volunteers').doc(id).delete();
@@ -412,12 +520,12 @@
 
             const seatNum = parseInt(newSeat);
             if (isNaN(seatNum) || seatNum < 1 || seatNum > 60) {
-                alert('Assento inválido!');
+                alert('Assento inválido! Digite um número entre 1 e 60.');
                 return;
             }
 
             if (volunteers.some(v => v.seatNumber === seatNum && v.id !== id)) {
-                alert('Assento já ocupado!');
+                alert('Assento já ocupado por outro voluntário!');
                 return;
             }
 
@@ -430,12 +538,13 @@
                 const emailSent = await sendSeatChangeEmail(volunteer, oldSeat, seatNum);
                 
                 if (emailSent) {
-                    alert(`✅ Assento alterado!\nEmail enviado para ${volunteer.email}`);
+                    alert(`✅ Assento alterado!\n\n${volunteer.firstName} foi movido do assento ${oldSeat} para o assento ${seatNum}.\n\nEmail de confirmação enviado para ${volunteer.email}.`);
                 } else {
-                    alert(`⚠️ Assento alterado, mas não foi possível enviar o email.`);
+                    alert(`⚠️ Assento alterado, mas não foi possível enviar o email de notificação.\n\n${volunteer.firstName} foi movido do assento ${oldSeat} para o assento ${seatNum}.`);
                 }
             } catch (error) {
-                alert('Erro ao alterar assento');
+                console.error('Erro ao alterar assento:', error);
+                alert('Erro ao alterar assento. Tente novamente.');
             }
         }
 
@@ -459,6 +568,13 @@
                 return false;
             }
         }
+
+        // ==========================================
+        // INICIALIZAÇÃO
+        // ==========================================
+        
+        // Iniciar verificação de autenticação quando a página carregar
+        window.addEventListener('load', initAuth);
     </script>
 </body>
 </html>
