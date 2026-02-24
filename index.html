@@ -201,6 +201,7 @@
             transition: all 0.3s;
             font-weight: 600;
             display: inline-block;
+            cursor: pointer;
         }
 
         .admin-link a:hover {
@@ -843,11 +844,31 @@
         let isMinor = false;
         let selectedResponsavel = null;
 
-                // Função para acessar área administrativa
+        const seatModal = document.getElementById('seatModal');
+
+        // ==========================================
+        // FUNÇÕES DE ADMIN (globais para o link funcionar)
+        // ==========================================
+        
+        // Função para verificar se é admin
+        async function checkIfAdmin(email) {
+            try {
+                const adminDoc = await db.collection('admins_listbusy').doc(email).get();
+                if (adminDoc.exists) {
+                    const data = adminDoc.data();
+                    return data.regra === 'admin' || data.regra === 'administrador';
+                }
+                return false;
+            } catch (error) {
+                console.error('Erro ao verificar admin:', error);
+                return false;
+            }
+        }
+
+        // Função para acessar área administrativa
         async function handleAdminAccess(event) {
             event.preventDefault();
             
-            // Verifica se já existe usuário logado
             const user = auth.currentUser;
             
             if (user) {
@@ -886,8 +907,6 @@
                 }
             }
         }
-
-        const seatModal = document.getElementById('seatModal');
 
         // Carregar voluntários do Firebase
         db.collection('volunteers').onSnapshot((snapshot) => {
@@ -1222,46 +1241,6 @@
         window.onclick = function(event) {
             if (event.target === seatModal) closeSeatModal();
         };
-        
-// Função para acessar área administrativa
-async function handleAdminAccess(event) {
-    event.preventDefault();
-    
-    const user = auth.currentUser;
-    
-    if (user) {
-        const isAdmin = await checkIfAdmin(user.email);
-        if (isAdmin) {
-            window.location.href = 'admin.html';
-        } else {
-            alert('Você não tem permissão de administrador.');
-            await auth.signOut();
-        }
-    } else {
-        try {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            const result = await auth.signInWithPopup(provider);
-            const loggedUser = result.user;
-            
-            const isAdmin = await checkIfAdmin(loggedUser.email);
-            
-            if (isAdmin) {
-                window.location.href = 'admin.html';
-            } else {
-                alert(`O email ${loggedUser.email} não tem permissão de administrador.`);
-                await auth.signOut();
-            }
-        } catch (error) {
-            if (error.code === 'auth/popup-closed-by-user') {
-                console.log('Login cancelado pelo usuário');
-            } else if (error.code === 'auth/popup-blocked') {
-                alert('Popup bloqueado! Permita popups para este site.');
-            } else {
-                console.error('Erro no login:', error);
-            }
-        }
-    }
-}
     </script>
 </body>
 </html>
