@@ -891,6 +891,7 @@
         // ==========================================
         
         let volunteers = [];
+        let volunteersPublico = []; // NOVO: Array para coleção pública
         let selectedSeat = null;
         let tempFormData = null;
         let isMinor = false;
@@ -1018,13 +1019,25 @@
             }
         }
 
-        // Carregar voluntários do Firebase
+        // Carregar voluntários da coleção principal (para assentos ocupados)
         db.collection('volunteers').onSnapshot((snapshot) => {
             volunteers = [];
             snapshot.forEach((doc) => {
                 volunteers.push({ id: doc.id, ...doc.data() });
             });
-            updateResponsaveisList();
+            renderSeats(); // Atualiza os assentos
+        });
+
+        // NOVO: Carregar voluntários da coleção pública (para responsáveis)
+        db.collection('volunteers_publico').onSnapshot((snapshot) => {
+            volunteersPublico = [];
+            snapshot.forEach((doc) => {
+                volunteersPublico.push({ id: doc.id, ...doc.data() });
+            });
+            // Se for menor de idade, atualiza a lista de responsáveis
+            if (isMinor) {
+                updateResponsaveisList();
+            }
         });
 
         // Event listeners para máscaras
@@ -1061,24 +1074,23 @@
             }
         }
 
-        // Atualizar lista de responsáveis (maiores de idade)
+        // Atualizar lista de responsáveis (maiores de idade) - USA COLEÇÃO PÚBLICA
         function updateResponsaveisList() {
             const select = document.getElementById('responsavelSelect');
             const currentValue = select.value;
             
+            // Limpa opções exceto a primeira
             while (select.options.length > 1) {
                 select.remove(1);
             }
 
-            const responsaveis = volunteers.filter(v => {
-                const age = calculateAge(v.birthDate);
-                return age >= 18;
-            });
+            // Filtra apenas maiores de idade da coleção pública
+            const responsaveis = volunteersPublico.filter(v => v.age >= 18);
 
             responsaveis.forEach(resp => {
                 const option = document.createElement('option');
                 option.value = resp.id;
-                option.textContent = `${resp.firstName} ${resp.lastName} (Assento ${resp.seatNumber})`;
+                option.textContent = `${resp.firstName} ${resp.lastName}`;
                 select.appendChild(option);
             });
 
@@ -1087,7 +1099,7 @@
             }
         }
 
-        // Mostrar info do responsável selecionado
+        // Mostrar info do responsável selecionado - USA COLEÇÃO PÚBLICA (apenas nome e idade)
         function updateResponsavelInfo() {
             const select = document.getElementById('responsavelSelect');
             const infoDiv = document.getElementById('responsavelInfo');
@@ -1099,15 +1111,15 @@
                 return;
             }
 
-            const responsavel = volunteers.find(v => v.id === responsavelId);
+            // Busca na coleção pública (volunteersPublico)
+            const responsavel = volunteersPublico.find(v => v.id === responsavelId);
             if (responsavel) {
                 selectedResponsavel = responsavel;
+                // Mostra apenas nome e idade (dados sensíveis não estão disponíveis na pública)
                 infoDiv.innerHTML = `
                     <strong>Responsável Selecionado:</strong><br>
-                    <small>Nome:</small> ${responsavel.firstName} ${responsavel.lastName}<br>
-                    <small>RG:</small> ${responsavel.rg}<br>
-                    <small>Telefone:</small> ${responsavel.phone}<br>
-                    <small>Assento:</small> ${responsavel.seatNumber}
+                    ${responsavel.firstName} ${responsavel.lastName}<br>
+                    <small>Idade: ${responsavel.age} anos</small>
                 `;
                 infoDiv.classList.remove('hidden');
             }
@@ -1150,10 +1162,8 @@
                 isMinor: isMinor,
                 responsavelId: isMinor ? selectedResponsavel.id : null,
                 responsavelNome: isMinor ? `${selectedResponsavel.firstName} ${selectedResponsavel.lastName}` : null,
-                responsavelAssento: isMinor ? selectedResponsavel.seatNumber : null,
                 emergencyContact: document.getElementById('emergencyContact').value.trim() || '',
-                medicalInfo: document.getElementById('medicalInfo').value.trim() || '',
-                registrationDate: new Date().toISOString()
+                medicalInfo: document.getElementById('medicalInfo').value.trim() || ''
             };
 
             renderSeats();
@@ -1168,7 +1178,7 @@
             selectedSeat = null;
         }
 
-        // CORREÇÃO: Renderizar assentos com layout 2+2 para ambos os decks
+        // Renderizar assentos com layout 2+2 para ambos os decks
         function renderSeats() {
             const upperRight = document.getElementById('upperRightSeats');
             const lowerRight = document.getElementById('lowerRightSeats');
@@ -1185,7 +1195,6 @@
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'seat-row-4';
                 
-                // Cria 2 assentos à esquerda, corredor, 2 assentos à direita
                 const seats = [
                     { num: base + 1 },
                     { num: base + 2 },
@@ -1208,12 +1217,11 @@
                 upperRight.appendChild(rowDiv);
             }
 
-            // CORREÇÃO: DECK Inferior (assentos 49-60) - AGORA COM LAYOUT 2+2 IGUAL AO SUPERIOR
-            // 12 assentos = 3 fileiras de 4 assentos (2 + corredor + 2)
+            // DECK Inferior (assentos 49-60) - Layout 2+2 igual ao superior
             for (let row = 0; row < 3; row++) {
                 const base = 49 + (row * 4);
                 const rowDiv = document.createElement('div');
-                rowDiv.className = 'seat-row-4'; // Usando mesmo grid do superior
+                rowDiv.className = 'seat-row-4';
                 
                 const seats = [
                     { num: base },
@@ -1227,7 +1235,7 @@
                     if (seat === null) {
                         const corridor = document.createElement('div');
                         corridor.className = 'corridor';
-                        corridor.innerHTML = '|||'; // Mesmo corredor do superior
+                        corridor.innerHTML = '|||';
                         rowDiv.appendChild(corridor);
                     } else if (seat.num <= 60) {
                         createSeatElement(seat.num, rowDiv, occupiedSeats);
@@ -1272,6 +1280,12 @@
         // Enviar email de confirmação
         async function sendConfirmationEmail(formData, seatNumber) {
             try {
+                // Verifica se EmailJS está configurado
+                if (typeof EMAILJS_CONFIG === 'undefined') {
+                    console.warn('EmailJS não configurado');
+                    return false;
+                }
+
                 const templateParams = {
                     to_email: formData.email,
                     nome: `${formData.firstName} ${formData.lastName}`,
@@ -1283,6 +1297,7 @@
                     EMAILJS_CONFIG.TEMPLATE_ID,
                     templateParams
                 );
+                console.log('Email enviado com sucesso!');
                 return true;
             } catch (error) {
                 console.error('Erro ao enviar email:', error);
@@ -1295,6 +1310,7 @@
             if (!selectedSeat || !tempFormData) return;
 
             const confirmBtn = document.getElementById('confirmSeatBtn');
+            const originalBtnText = confirmBtn.innerHTML;
             confirmBtn.innerHTML = 'Processando... <span class="loading"></span>';
             confirmBtn.disabled = true;
 
@@ -1304,11 +1320,18 @@
             };
 
             try {
-                // USA A NOVA FUNÇÃO QUE SALVA EM AMBAS AS COLEÇÕES
+                // 1. Salva no Firebase (ambas as coleções)
                 await salvarVoluntarioComDadosPublicos(formData);
                 
-                const emailSent = await sendConfirmationEmail(formData, selectedSeat);
+                // 2. Tenta enviar email (não bloqueia se falhar)
+                let emailSent = false;
+                try {
+                    emailSent = await sendConfirmationEmail(formData, selectedSeat);
+                } catch (emailError) {
+                    console.warn('Erro ao enviar email (não crítico):', emailError);
+                }
                 
+                // 3. Limpa formulário e mostra sucesso
                 closeSeatModal();
                 document.getElementById('volunteerForm').reset();
                 document.getElementById('responsavelSection').classList.add('hidden');
@@ -1316,6 +1339,7 @@
                 selectedResponsavel = null;
                 isMinor = false;
                 
+                // 4. Mensagem de sucesso
                 const successMessage = document.getElementById('successMessage');
                 if (emailSent) {
                     successMessage.innerHTML = '✅ Cadastro realizado com sucesso! Um email de confirmação foi enviado para ' + formData.email;
@@ -1324,15 +1348,19 @@
                 }
                 successMessage.style.display = 'block';
                 
+                // Esconde mensagem após 8 segundos
                 setTimeout(() => {
                     successMessage.style.display = 'none';
                 }, 8000);
 
             } catch (error) {
+                console.error('Erro ao salvar cadastro:', error);
                 showError('Erro ao salvar cadastro. Tente novamente.');
-                console.error(error);
             } finally {
-                confirmBtn.innerHTML = 'Confirmar Cadastro no Assento <span id="selectedSeatDisplay" style="font-weight: 900;"></span>';
+                // Restaura botão
+                confirmBtn.innerHTML = originalBtnText;
+                confirmBtn.disabled = false;
+                document.getElementById('selectedSeatDisplay').textContent = selectedSeat || '';
             }
         }
 
