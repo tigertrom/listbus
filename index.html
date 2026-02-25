@@ -960,6 +960,64 @@
             }
         }
 
+        // ==========================================
+        // FUNÇÃO PARA SALVAR NA COLEÇÃO PÚBLICA
+        // ==========================================
+
+        /**
+         * Salva o voluntário em ambas as coleções:
+         * - volunteers (dados completos, protegida)
+         * - volunteers_publico (apenas nome, sobrenome, idade - pública)
+         */
+        async function salvarVoluntarioComDadosPublicos(formData) {
+            try {
+                // 1. Calcula a idade
+                const dataNasc = new Date(formData.birthDate);
+                const hoje = new Date();
+                let idade = hoje.getFullYear() - dataNasc.getFullYear();
+                const mes = hoje.getMonth() - dataNasc.getMonth();
+                if (mes < 0 || (mes === 0 && hoje.getDate() < dataNasc.getDate())) {
+                    idade--;
+                }
+                
+                // 2. Salva na coleção principal (dados completos)
+                const docRef = await db.collection('volunteers').add({
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    email: formData.email,
+                    rg: formData.rg,
+                    cpf: formData.cpf || '',
+                    phone: formData.phone,
+                    birthDate: formData.birthDate,
+                    age: idade,
+                    seatNumber: formData.seatNumber,
+                    isMinor: formData.isMinor,
+                    responsavelId: formData.responsavelId || null,
+                    responsavelNome: formData.responsavelNome || null,
+                    emergencyContact: formData.emergencyContact || '',
+                    medicalInfo: formData.medicalInfo || '',
+                    registrationDate: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // 3. Salva na coleção pública (apenas dados não sensíveis)
+                // IMPORTANTE: Usamos o mesmo ID do documento principal
+                await db.collection('volunteers_publico').doc(docRef.id).set({
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    age: idade,
+                    isMinor: formData.isMinor,
+                    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                console.log('Voluntário salvo em ambas as coleções! ID:', docRef.id);
+                return docRef.id;
+                
+            } catch (error) {
+                console.error('Erro ao salvar voluntário:', error);
+                throw error;
+            }
+        }
+
         // Carregar voluntários do Firebase
         db.collection('volunteers').onSnapshot((snapshot) => {
             volunteers = [];
@@ -1246,7 +1304,8 @@
             };
 
             try {
-                await db.collection('volunteers').add(formData);
+                // USA A NOVA FUNÇÃO QUE SALVA EM AMBAS AS COLEÇÕES
+                await salvarVoluntarioComDadosPublicos(formData);
                 
                 const emailSent = await sendConfirmationEmail(formData, selectedSeat);
                 
