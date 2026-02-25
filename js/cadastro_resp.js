@@ -1,58 +1,44 @@
 /**
  * cadastro_resp.js
  * 
- * Busca responsáveis (maiores de idade) diretamente do Firebase
- * Mostra apenas o nome completo para proteger dados sensíveis
+ * Busca responsáveis na coleção pública (apenas nome e sobrenome)
+ * Dados sensíveis permanecem protegidos na coleção principal
  */
 
 /**
- * Busca passageiros maiores de idade no Firebase e popula o select
- * Exibe apenas nome completo, ocultando email, telefone e outros dados
+ * Busca passageiros maiores de idade na coleção pública
  */
 async function carregarResponsaveisDoFirebase() {
-    const responsavelSelect = document.getElementById('responsavel');
+    const responsavelSelect = document.getElementById('responsavelSelect');
     if (!responsavelSelect) return;
     
     // Limpa e adiciona opção padrão
-    responsavelSelect.innerHTML = '<option value="">Selecione o Responsável</option>';
+    responsavelSelect.innerHTML = '<option value="">-- Selecione um responsável --</option>';
     
     try {
-        const snapshot = await db.collection('passageiros')
-            .orderBy('nome')
+        console.log('Buscando responsáveis na coleção pública...');
+        
+        // Busca na coleção PÚBLICA (volunteers_publico)
+        const snapshot = await db.collection('volunteers_publico')
+            .orderBy('firstName')
             .get();
         
+        let count = 0;
+        
         snapshot.forEach(doc => {
-            const passageiro = doc.data();
+            const dados = doc.data();
             
-            // Verifica se tem data de nascimento
-            if (passageiro.dataNascimento) {
-                const dataNasc = passageiro.dataNascimento.toDate ? 
-                    passageiro.dataNascimento.toDate() : 
-                    new Date(passageiro.dataNascimento);
-                
-                const idade = calcularIdade(dataNasc);
-                
-                // Apenas maiores de idade
-                if (idade >= 18) {
-                    const option = document.createElement('option');
-                    
-                    // Guarda o ID do documento como valor (para referência no banco)
-                    option.value = doc.id;
-                    
-                    // Mostra APENAS o nome completo (protege dados sensíveis)
-                    const nomeCompleto = `${passageiro.nome} ${passageiro.sobrenome}`;
-                    option.textContent = nomeCompleto;
-                    
-                    // Guarda dados internamente (não visíveis ao usuário)
-                    // mas necessários para salvar o vínculo corretamente
-                    option.dataset.nome = passageiro.nome;
-                    option.dataset.sobrenome = passageiro.sobrenome;
-                    option.dataset.idResponsavel = doc.id;
-                    
-                    responsavelSelect.appendChild(option);
-                }
+            // Apenas maiores de idade (idade >= 18)
+            if (dados.age >= 18) {
+                const option = document.createElement('option');
+                option.value = doc.id; // ID vincula ao documento principal
+                option.textContent = `${dados.firstName} ${dados.lastName}`;
+                responsavelSelect.appendChild(option);
+                count++;
             }
         });
+        
+        console.log(`${count} responsáveis carregados`);
         
     } catch (error) {
         console.error('Erro ao buscar responsáveis:', error);
@@ -62,31 +48,29 @@ async function carregarResponsaveisDoFirebase() {
 
 // Evento de mudança na data de nascimento
 document.addEventListener('DOMContentLoaded', function() {
-    const dataNascInput = document.getElementById('dataNascimento');
+    const dataNascInput = document.getElementById('birthDate');
     const responsavelSection = document.getElementById('responsavelSection');
     
     if (dataNascInput && responsavelSection) {
         dataNascInput.addEventListener('change', async function() {
-            const dataNasc = new Date(this.value);
-            const idade = calcularIdade(dataNasc);
+            // Usa a função calculateAge do utils.js
+            const idade = calculateAge(this.value);
             
             if (idade < 18) {
-                // Mostra seção de responsável
-                responsavelSection.style.display = 'block';
+                responsavelSection.classList.remove('hidden');
                 
-                const responsavelSelect = document.getElementById('responsavel');
+                const responsavelSelect = document.getElementById('responsavelSelect');
                 if (responsavelSelect) {
                     responsavelSelect.setAttribute('required', 'required');
                 }
                 
-                // Busca do Firebase (sempre dados atualizados)
+                // Busca da coleção pública (sempre dados atualizados)
                 await carregarResponsaveisDoFirebase();
                 
             } else {
-                // Esconde seção de responsável
-                responsavelSection.style.display = 'none';
+                responsavelSection.classList.add('hidden');
                 
-                const responsavelSelect = document.getElementById('responsavel');
+                const responsavelSelect = document.getElementById('responsavelSelect');
                 if (responsavelSelect) {
                     responsavelSelect.removeAttribute('required');
                     responsavelSelect.value = '';
