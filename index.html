@@ -13,9 +13,8 @@
     <!-- Scripts compartilhados -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
-    <!-- NÃO importe auth.js aqui - vamos usar funções locais -->
     
-    <style>
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -42,7 +41,7 @@
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #000020 0%, #0000c1 90%, #cc0000 100%);
             min-height: 100vh;
             color: var(--gray-800);
         }
@@ -150,7 +149,7 @@
             gap: 15px;
         }
 
-        @media (max-width: 500px) {
+        @media (max-width: 600px) {
             .form-row {
                 grid-template-columns: 1fr;
             }
@@ -295,10 +294,11 @@
         .modal-content {
             background: var(--white);
             border-radius: 20px;
-            max-width: 1100px;
-            width: 100%;
-            max-height: 95vh;
-            overflow-y: auto;
+            width: min(450px, 95vw);
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
             position: relative;
             animation: modalSlide 0.3s ease;
         }
@@ -316,6 +316,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .modal-header h2 {
@@ -343,24 +344,32 @@
         }
 
         .modal-body {
-            padding: 30px;
+            padding: 10px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
         }
 
+        /* CORREÇÃO: Bus wrapper centralizado */
         .bus-wrapper {
             background: var(--gray-100);
-            border-radius: 50px 50px 20px 20px;
-            padding: 40px 30px;
-            position: relative;
+            border-radius: 15px;
+            padding: 20px;
             border: 3px solid var(--gray-300);
+            display: flex;
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center; /* Centraliza verticalmente */
+            position: relative;
         }
 
+        /* CORREÇÃO: Área do motorista apenas no deck inferior, posicionada absoluta à esquerda do wrapper */
         .driver-area {
             position: absolute;
-            left: -3px;
-            top: 50%;
+            left: 20px; /* Distância da borda esquerda do wrapper */
+            top: 75%; /* Posicionado no deck inferior (aproximadamente) */
             transform: translateY(-50%);
-            width: 70px;
-            height: 90px;
+            width: 50px;
+            height: 70px;
             background: var(--gray-200);
             border-radius: 0 45px 45px 0;
             border: 3px solid var(--gray-300);
@@ -368,41 +377,68 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.5rem;
             z-index: 10;
         }
+    /* ÁREA DO MOTORISTA NO DECK INFERIOR - ACIMA DOS ASSENTOS */
+.driver-area-lower {
+    width: 100%;
+    max-width: 280px; /* Mesma largura máxima das fileiras de assentos */
+    height: 50px;
+    background: var(--gray-200);
+    border: 3px solid var(--gray-300);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--gray-600);
+    margin-bottom: 15px; /* Espaço entre motorista e assentos */
+    font-weight: 600;
+}
 
+        /* CORREÇÃO: Bus container sem margem esquerda, centralizado */
         .bus-container {
             display: flex;
             flex-direction: column;
-            gap: 40px;
-            margin-left: 50px;
+            gap: 20px;
+            width: 100%;
+            max-width: 320px; /* Largura máxima para manter proporção */
+            margin: 0 auto; /* Centraliza o container */
         }
 
         .deck-section {
             background: var(--white);
             border-radius: 15px;
-            padding: 25px;
-            border: 2px solid var(--gray-200);
+            padding: 15px 10px;
+            border: 3px solid var(--gray-200);
+            width: 100%;
         }
 
         .deck-section.upper {
             background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
             border-color: #3b82f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .deck-section.lower {
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
             border-color: #f59e0b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative; /* Para posicionamento relativo se necessário */
         }
 
         .deck-title {
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: var(--gray-800);
-            margin-bottom: 25px;
-            padding: 10px 20px;
+            margin-bottom: 12px;
+            padding: 6px 12px;
             background: var(--white);
             border-radius: 30px;
             display: inline-block;
@@ -412,63 +448,53 @@
 
         .deck-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            width: 100%;
         }
 
         .deck-layout {
             display: flex;
-            gap: 60px;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
         }
 
         .deck-side {
+            width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-        }
-
-        .side-label {
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--gray-600);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        .left-grid-extended {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            max-width: 160px;
+            align-items: center;
         }
 
         .right-grid {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 6px;
+            width: 100%;
+            align-items: center;
         }
 
+        /* Grid para 4 assentos (2 + corredor + 2) - usado em ambos os decks */
         .seat-row-4 {
             display: grid;
-            grid-template-columns: 70px 70px 40px 70px 70px;
-            gap: 8px;
+            grid-template-columns: repeat(2, 1fr) 25px repeat(2, 1fr);
+            gap: 6px;
             align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 280px;
         }
 
+        /* Grid para 3 assentos (1 + corredor + 2) - REMOVIDO, não usado mais */
         .seat-row-3 {
-            display: grid;
-            grid-template-columns: 70px 40px 70px 70px;
-            gap: 8px;
-            align-items: center;
+            display: none; /* Oculto pois não será usado */
         }
 
         .seat {
             aspect-ratio: 1;
             border: 2px solid var(--gray-300);
-            border-radius: 10px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -476,15 +502,16 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background: var(--white);
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
             color: var(--gray-800);
             position: relative;
-            min-height: 60px;
+            min-height: 32px;
+            width: 100%;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .seat:hover:not(.occupied) {
-            transform: translateY(-3px) scale(1.05);
+            transform: translateY(-2px) scale(1.05);
             box-shadow: var(--shadow-lg);
             border-color: var(--primary);
             background: #eff6ff;
@@ -494,8 +521,8 @@
             background: var(--primary);
             color: var(--white);
             border-color: var(--primary);
-            transform: scale(1.1);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
         }
 
         .seat.occupied {
@@ -507,7 +534,7 @@
         .seat.occupied::after {
             content: '✓';
             position: absolute;
-            font-size: 1.5rem;
+            font-size: 0.9rem;
             color: var(--gray-600);
             font-weight: 900;
         }
@@ -515,51 +542,65 @@
         .corridor {
             text-align: center;
             color: var(--gray-400);
-            font-size: 1.2rem;
+            font-size: 0.8rem;
             font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
         }
 
         .empty-area {
-            width: 160px;
-            height: 220px;
+            width: 100px;
+            height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--gray-400);
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             border: 2px dashed var(--gray-300);
-            border-radius: 10px;
+            border-radius: 8px;
             background: var(--gray-50);
+        }
+
+        .side-label {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
         }
 
         .legend {
             display: flex;
-            gap: 30px;
+            gap: 12px;
             justify-content: center;
-            margin-top: 30px;
+            margin-top: 15px;
             flex-wrap: wrap;
-            padding-top: 20px;
+            padding-top: 12px;
             border-top: 2px solid var(--gray-200);
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 0.95rem;
+            gap: 5px;
+            font-size: 0.75rem;
             color: var(--gray-700);
             font-weight: 500;
         }
 
         .legend-box {
-            width: 35px;
-            height: 35px;
-            border-radius: 8px;
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
             border: 2px solid var(--gray-300);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-size: 0.65rem;
             font-weight: 700;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -609,39 +650,64 @@
             75% { transform: translateX(10px); }
         }
 
-        @media (max-width: 768px) {
-            .deck-layout {
-                flex-direction: column;
-                gap: 30px;
+        @media (max-width: 600px) {
+            .modal-content {
+                width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+                margin: 0;
             }
             
-            .bus-wrapper {
-                padding: 30px 20px;
-                border-radius: 30px 30px 15px 15px;
+            .modal-overlay {
+                padding: 0;
             }
             
-            .driver-area {
-                width: 50px;
-                height: 70px;
-                font-size: 1.5rem;
+            .modal-body {
+                padding: 15px;
             }
             
-            .bus-container {
-                margin-left: 30px;
-            }
-            
-            .seat-row-4,
-            .seat-row-3 {
-                grid-template-columns: 55px 55px 30px 55px 55px;
-            }
-            
-            .seat-row-3 {
-                grid-template-columns: 55px 30px 55px 55px;
+            .seat-row-4 {
+                max-width: 100%;
+                gap: 5px;
             }
             
             .seat {
-                min-height: 50px;
-                font-size: 0.9rem;
+                min-height: 28px;
+                font-size: 0.7rem;
+                border-radius: 5px;
+            }
+            
+            .bus-wrapper {
+                padding: 15px 10px;
+                border-radius: 12px;
+            }
+            
+            /* CORREÇÃO: Driver area em mobile */
+            .driver-area {
+                width: 60px;
+                height: 60px;
+                font-size: 1rem;
+                left: 100px;
+                top: 72%;
+            }
+            
+            .bus-container {
+                max-width: 100%;
+                gap: 15px;
+            }
+            
+            .deck-section {
+                padding: 12px 8px;
+            }
+            
+            .corridor {
+                font-size: 0.7rem;
+            }
+            
+            .deck-title {
+                font-size: 0.75rem;
+                padding: 4px 10px;
             }
         }
     </style>
@@ -762,53 +828,37 @@
                     <strong>🚌 Dica:</strong> O deck superior (azul) tem 48 assentos. O deck inferior (amarelo) tem 12 assentos na parte de trás do ônibus.
                 </div>
 
-                <div class="bus-wrapper">
-                    <div class="driver-area">🧑‍✈️</div>
-                    
+                <div class="bus-wrapper">            
                     <div class="bus-container">
                         <!-- DECK SUPERIOR -->
                         <div class="deck-section upper">
                             <div class="deck-header">
                                 <div class="deck-title">🟦 DECK SUPERIOR (48 assentos)</div>
                             </div>
-                            <div class="deck-layout">
-                                <!-- Lado Esquerdo: 3,4,7,8,9,10,11,12,13,14 -->
+                            <div class="deck-layout">                                                            
                                 <div class="deck-side">
-                                    <div class="side-label">Lado Esquerdo</div>
-                                    <div class="left-grid-extended" id="upperLeftSeats"></div>
-                                </div>
-                                
-                                <!-- Lado Direito: 15-48 -->
-                                <div class="deck-side">
-                                    <div class="side-label">Lado Direito</div>
                                     <div class="right-grid" id="upperRightSeats"></div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- DECK INFERIOR -->
-                        <div class="deck-section lower">
-                            <div class="deck-header">
-                                <div class="deck-title">🟨 DECK INFERIOR (12 assentos)</div>
-                            </div>
-                            <div class="deck-layout">
-                                <!-- Lado Esquerdo: VAZIO (área do motorista) -->
-                                <div class="deck-side">
-                                    <div class="side-label">Área do Motorista</div>
-                                    <div class="empty-area">
-                                        <span>🚌 Motorista</span>
-                                    </div>
-                                </div>
-                                
-                                <!-- Lado Direito: 49-60 -->
-                                <div class="deck-side">
-                                    <div class="side-label">Lado Direito</div>
-                                    <div class="right-grid" id="lowerRightSeats"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<div class="deck-section lower">
+    <div class="deck-header">
+        <div class="deck-title">🟨 DECK INFERIOR (12 assentos)</div>
+    </div>
+    
+    <!-- ÁREA DO MOTORISTA - AGORA NO TOPO -->
+    <div class="driver-area-lower">
+        <span>🚌 Área do Motorista</span>
+    </div>
+    
+    <div class="deck-layout">
+        <div class="deck-side">
+            <div class="right-grid" id="lowerRightSeats"></div>
+        </div>
+    </div>
+</div>
 
                 <div class="legend">
                     <div class="legend-item">
@@ -1059,43 +1109,37 @@
             selectedSeat = null;
         }
 
-        // Renderizar assentos
+        // CORREÇÃO: Renderizar assentos com layout 2+2 para ambos os decks
         function renderSeats() {
-            const upperLeft = document.getElementById('upperLeftSeats');
             const upperRight = document.getElementById('upperRightSeats');
             const lowerRight = document.getElementById('lowerRightSeats');
 
-            upperLeft.innerHTML = '';
+            // Limpa os containers
             upperRight.innerHTML = '';
             lowerRight.innerHTML = '';
 
             const occupiedSeats = volunteers.map(v => v.seatNumber);
 
-            // Lado esquerdo superior (assentos 3,4,7,8,9,10,11,12,13,14)
-            const leftSeatsOrder = [3, 4, 7, 8, 9, 10, 11, 12, 13, 14];
-            leftSeatsOrder.forEach(num => {
-                createSeatElement(num, upperLeft, occupiedSeats);
-            });
-
-            // Lado direito superior (assentos 15-48)
-            for (let row = 0; row < 9; row++) {
-                const base = 15 + (row * 4);
+            // DECK Superior (assentos 01-48) - 4 assentos por linha (2 + corredor + 2)
+            for (let row = 0; row < 12; row++) {
+                const base = row * 4;
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'seat-row-4';
                 
+                // Cria 2 assentos à esquerda, corredor, 2 assentos à direita
                 const seats = [
-                    { num: base },
                     { num: base + 1 },
-                    null,
                     { num: base + 2 },
-                    { num: base + 3 }
+                    null, // corredor
+                    { num: base + 3 },
+                    { num: base + 4 }
                 ];
                 
                 seats.forEach((seat) => {
                     if (seat === null) {
                         const corridor = document.createElement('div');
                         corridor.className = 'corridor';
-                        corridor.innerHTML = '•';
+                        corridor.innerHTML = '|||';
                         rowDiv.appendChild(corridor);
                     } else if (seat.num <= 48) {
                         createSeatElement(seat.num, rowDiv, occupiedSeats);
@@ -1105,24 +1149,26 @@
                 upperRight.appendChild(rowDiv);
             }
 
-            // Lado direito inferior (assentos 49-60)
-            for (let row = 0; row < 4; row++) {
-                const base = 49 + (row * 3);
+            // CORREÇÃO: DECK Inferior (assentos 49-60) - AGORA COM LAYOUT 2+2 IGUAL AO SUPERIOR
+            // 12 assentos = 3 fileiras de 4 assentos (2 + corredor + 2)
+            for (let row = 0; row < 3; row++) {
+                const base = 49 + (row * 4);
                 const rowDiv = document.createElement('div');
-                rowDiv.className = 'seat-row-3';
+                rowDiv.className = 'seat-row-4'; // Usando mesmo grid do superior
                 
                 const seats = [
                     { num: base },
-                    null,
                     { num: base + 1 },
-                    { num: base + 2 }
+                    null, // corredor
+                    { num: base + 2 },
+                    { num: base + 3 }
                 ];
                 
                 seats.forEach((seat) => {
                     if (seat === null) {
                         const corridor = document.createElement('div');
                         corridor.className = 'corridor';
-                        corridor.innerHTML = '•';
+                        corridor.innerHTML = '|||'; // Mesmo corredor do superior
                         rowDiv.appendChild(corridor);
                     } else if (seat.num <= 60) {
                         createSeatElement(seat.num, rowDiv, occupiedSeats);
@@ -1156,11 +1202,12 @@
             });
 
             const seatElement = document.querySelector(`[data-seat="${seatNumber}"]`);
-            seatElement.classList.add('selected');
-            
-            selectedSeat = seatNumber;
-            document.getElementById('confirmSeatBtn').disabled = false;
-            document.getElementById('selectedSeatDisplay').textContent = selectedSeat;
+            if (seatElement) {
+                seatElement.classList.add('selected');
+                selectedSeat = seatNumber;
+                document.getElementById('confirmSeatBtn').disabled = false;
+                document.getElementById('selectedSeatDisplay').textContent = selectedSeat;
+            }
         }
 
         // Enviar email de confirmação
