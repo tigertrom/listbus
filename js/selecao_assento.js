@@ -52,7 +52,9 @@ function renderizarAssentos() {
     container.appendChild(criarDeckInferior());
 }
 
-// Cria o Deck Superior (48 assentos) - Layout exato conforme imagem
+// ==========================================
+// DECK SUPERIOR (48 assentos) - CORRIGIDO
+// ==========================================
 function criarDeckSuperior() {
     const deck = document.createElement('div');
     deck.className = 'deck-section upper';
@@ -83,8 +85,11 @@ function criarDeckSuperior() {
     // Fileira 4: Assentos 11-12 (esq) + Cafeteria/Frigobar (dir)
     gridContainer.appendChild(criarFileiraCafeteria(11));
 
-    // Fileiras 5-12: Assentos 13-48 (completo)
-    for (let i = 4; i < 12; i++) {
+    // CORREÇÃO: Fileira 5 - Assentos 13-16 (completo) <- ESTAVA FALTANDO!
+    gridContainer.appendChild(criarFileiraCompleta(13));
+
+    // Fileiras 6-12: Assentos 17-44 (completo)
+    for (let i = 4; i < 11; i++) {
         gridContainer.appendChild(criarFileiraCompleta(1 + (i * 4)));
     }
 
@@ -95,7 +100,9 @@ function criarDeckSuperior() {
     return deck;
 }
 
-// Cria o Deck Inferior (12 assentos) - Layout exato conforme imagem
+// ==========================================
+// DECK INFERIOR (12 assentos) - REESTRUTURADO
+// ==========================================
 function criarDeckInferior() {
     const deck = document.createElement('div');
     deck.className = 'deck-section lower';
@@ -110,7 +117,7 @@ function criarDeckInferior() {
     const gridContainer = document.createElement('div');
     gridContainer.className = 'bus-grid-vertical';
 
-    // Área da frente: Cama motorista (esq) + Entrada (dir)
+    // 1. Frente: Motorista (esq) + 2º Motorista (dir)
     const frente = document.createElement('div');
     frente.className = 'area-frente inferior';
     frente.style.display = 'grid';
@@ -119,80 +126,80 @@ function criarDeckInferior() {
     frente.style.padding = '10px';
     frente.innerHTML = `
         <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; font-size: 0.7rem; text-align: center;">
-            <div style="font-size: 1rem; margin-bottom: 2px;">🛏️</div>
-            CAMA MOTORISTA
+            <div style="font-size: 1rem; margin-bottom: 2px;">👨‍✈️</div>
+            MOTORISTA
         </div>
         <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; font-size: 0.7rem; text-align: center;">
-            <div style="font-size: 1rem; margin-bottom: 2px;">🚪</div>
-            ENTRADA
+            <div style="font-size: 1rem; margin-bottom: 2px;">👨‍✈️</div>
+            2º MOTORISTA
         </div>
     `;
     gridContainer.appendChild(frente);
 
-    // Sala VIP (esq) + Banheiro (dir)
-    const areaServicos = document.createElement('div');
-    areaServicos.style.display = 'grid';
-    areaServicos.style.gridTemplateColumns = '1fr 1fr';
-    areaServicos.style.gap = '8px';
-    areaServicos.style.marginBottom = '8px';
-    areaServicos.innerHTML = `
+    // 2. Sala VIP (esq) + Cama Motorista (dir)
+    const area1 = document.createElement('div');
+    area1.style.display = 'grid';
+    area1.style.gridTemplateColumns = '1fr 1fr';
+    area1.style.gap = '8px';
+    area1.style.marginBottom = '8px';
+    area1.innerHTML = `
         <div style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white; padding: 15px 8px; border-radius: 8px; text-align: center; font-size: 0.7rem; font-weight: bold;">
             <div style="font-size: 1.1rem; margin-bottom: 4px;">🛋️</div>
             SALA VIP
         </div>
         <div style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white; padding: 15px 8px; border-radius: 8px; text-align: center; font-size: 0.7rem; font-weight: bold;">
+            <div style="font-size: 1.1rem; margin-bottom: 4px;">🛏️</div>
+            CAMA MOTORISTA
+        </div>
+    `;
+    gridContainer.appendChild(area1);
+
+    // 3. Banheiro (esq) + Porta com Escada (dir)
+    const area2 = document.createElement('div');
+    area2.style.display = 'grid';
+    area2.style.gridTemplateColumns = '1fr 1fr';
+    area2.style.gap = '8px';
+    area2.style.marginBottom = '8px';
+    area2.innerHTML = `
+        <div style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white; padding: 15px 8px; border-radius: 8px; text-align: center; font-size: 0.7rem; font-weight: bold;">
             <div style="font-size: 1.1rem; margin-bottom: 4px;">🚻</div>
             BANHEIRO
         </div>
+        <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 8px; border-radius: 8px; text-align: center; font-size: 0.6rem; font-weight: bold; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+            <div style="font-size: 0.9rem;">🚪</div>
+            <div>PORTA</div>
+            <div style="font-size: 0.9rem;">🚶</div>
+            <div>ESCADA</div>
+        </div>
     `;
-    gridContainer.appendChild(areaServicos);
+    gridContainer.appendChild(area2);
 
-    // Porta lateral
-    const porta = document.createElement('div');
-    porta.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
-    porta.style.color = 'white';
-    porta.style.padding = '6px';
-    porta.style.borderRadius = '4px';
-    porta.style.textAlign = 'center';
-    porta.style.fontSize = '0.6rem';
-    porta.style.fontWeight = 'bold';
-    porta.style.marginBottom = '10px';
-    porta.style.letterSpacing = '3px';
-    porta.textContent = '════ PORTA ════';
-    gridContainer.appendChild(porta);
-
-    // 3 fileiras de assentos: 49-52, 53-56, 57-60
+    // 4. Três fileiras de assentos
+    // Fileira 1: 49-52 (completa)
     gridContainer.appendChild(criarFileiraCompleta(49));
+    
+    // Fileira 2: 53-56 (completa)
     gridContainer.appendChild(criarFileiraCompleta(53));
-    gridContainer.appendChild(criarFileiraCompleta(57));
+    
+    // Fileira 3: 57, 58, FRIGOBAR, 60, 59
+    gridContainer.appendChild(criarFileiraInferiorFinal());
 
-    // Bagageiro com Frigobar acima
-    const bagageiroArea = document.createElement('div');
-    bagageiroArea.style.position = 'relative';
-    bagageiroArea.style.marginTop = '8px';
-    
-    // Frigobar acima
-    const frigobar = document.createElement('div');
-    frigobar.style.background = '#facc15';
-    frigobar.style.color = '#854d0e';
-    frigobar.style.padding = '4px 8px';
-    frigobar.style.borderRadius = '4px 4px 0 0';
-    frigobar.style.textAlign = 'center';
-    frigobar.style.fontSize = '0.6rem';
-    frigobar.style.fontWeight = 'bold';
-    frigobar.textContent = '🧊 FRIGOBAR';
-    bagageiroArea.appendChild(frigobar);
-    
-    // Bagageiro
+    // 5. Bagageiro (espaço vazio)
     const bagageiro = document.createElement('div');
-    bagageiro.className = 'escada-final';
     bagageiro.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
-    bagageiro.style.borderRadius = '0 0 8px 8px';
-    bagageiro.style.marginTop = '0';
+    bagageiro.style.color = 'white';
+    bagageiro.style.padding = '25px';
+    bagageiro.style.borderRadius = '8px';
+    bagageiro.style.textAlign = 'center';
+    bagageiro.style.fontSize = '1rem';
+    bagageiro.style.fontWeight = 'bold';
+    bagageiro.style.marginTop = '8px';
+    bagageiro.style.minHeight = '80px';
+    bagageiro.style.display = 'flex';
+    bagageiro.style.alignItems = 'center';
+    bagageiro.style.justifyContent = 'center';
     bagageiro.innerHTML = '🧳 BAGAGEIRO';
-    bagageiroArea.appendChild(bagageiro);
-    
-    gridContainer.appendChild(bagageiroArea);
+    gridContainer.appendChild(bagageiro);
 
     deck.appendChild(gridContainer);
     return deck;
@@ -300,7 +307,7 @@ function criarFileiraCafeteria(numInicial) {
     return fileira;
 }
 
-// Cria última fileira com frigobar no meio: 45, 46, FRIGOBAR, 48, 47
+// Cria última fileira do deck superior: 45, 46, Frigobar, 48, 47
 function criarFileiraFinalFrigobar() {
     const fileira = document.createElement('div');
     fileira.className = 'fileira-simples';
@@ -334,6 +341,45 @@ function criarFileiraFinalFrigobar() {
     direito.className = 'lado-direito';
     direito.appendChild(criarPoltrona(48));
     direito.appendChild(criarPoltrona(47));
+    fileira.appendChild(direito);
+
+    return fileira;
+}
+
+// Cria última fileira do deck inferior: 57, 58, FRIGOBAR, 60, 59
+function criarFileiraInferiorFinal() {
+    const fileira = document.createElement('div');
+    fileira.className = 'fileira-simples';
+
+    // Lado esquerdo: 57, 58
+    const esquerdo = document.createElement('div');
+    esquerdo.className = 'lado-esquerdo';
+    esquerdo.appendChild(criarPoltrona(57));
+    esquerdo.appendChild(criarPoltrona(58));
+    fileira.appendChild(esquerdo);
+
+    // Meio: FRIGOBAR
+    const frigobar = document.createElement('div');
+    frigobar.style.background = '#facc15';
+    frigobar.style.color = '#854d0e';
+    frigobar.style.borderRadius = '6px';
+    frigobar.style.padding = '4px';
+    frigobar.style.textAlign = 'center';
+    frigobar.style.fontSize = '0.55rem';
+    frigobar.style.fontWeight = 'bold';
+    frigobar.style.writingMode = 'vertical-rl';
+    frigobar.style.textOrientation = 'mixed';
+    frigobar.style.display = 'flex';
+    frigobar.style.alignItems = 'center';
+    frigobar.style.justifyContent = 'center';
+    frigobar.textContent = '🧊 FRIGOBAR';
+    fileira.appendChild(frigobar);
+
+    // Lado direito: 60, 59 (ordem invertida)
+    const direito = document.createElement('div');
+    direito.className = 'lado-direito';
+    direito.appendChild(criarPoltrona(60));
+    direito.appendChild(criarPoltrona(59));
     fileira.appendChild(direito);
 
     return fileira;
