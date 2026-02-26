@@ -1,293 +1,379 @@
-/**
- * selecao_assento.js
- * 
- * Módulo de seleção de assentos - Layout vertical tipo ônibus de viagem
- * 60 assentos: 1-48 (deck superior), 49-60 (deck inferior)
- * Com escada no meio do deck superior (entre assentos 14-15)
- */
+// js/selecao_assento.js
+// Módulo de seleção de assentos com layout vertical (ônibus double decker)
 
-let assentosOcupados = [];
 let assentoSelecionado = null;
 let callbackConfirmacao = null;
+let assentosOcupados = [];
 
-/**
- * Inicializa o módulo de assentos
- */
-function initSelecaoAssento(onConfirmar) {
-    callbackConfirmacao = onConfirmar;
-    
-    db.collection('volunteers_publico').onSnapshot((snapshot) => {
-        assentosOcupados = [];
-        snapshot.forEach((doc) => {
-            const dados = doc.data();
-            if (dados.seatNumber) {
-                assentosOcupados.push({
-                    numero: dados.seatNumber,
-                    nome: `${dados.firstName} ${dados.lastName}`
-                });
-            }
-        });
-        console.log('Assentos ocupados:', assentosOcupados.length);
-    });
+// Inicializa o módulo
+function initSelecaoAssento(callback) {
+    callbackConfirmacao = callback;
 }
 
-/**
- * Abre o modal de seleção de assentos
- */
+// Atualiza lista de assentos ocupados
+function atualizarAssentosOcupados(voluntarios) {
+    assentosOcupados = voluntarios.map(v => parseInt(v.seatNumber));
+    if (document.getElementById('seatModal').classList.contains('active')) {
+        renderizarAssentos();
+    }
+}
+
+// Abre o modal
 function abrirModalAssentos() {
-    renderizarMapaAssentos();
-    document.getElementById('seatModal').classList.add('active');
     assentoSelecionado = null;
-    atualizarBotaoConfirmar();
+    document.getElementById('confirmSeatBtn').disabled = true;
+    document.getElementById('selectedSeatDisplay').textContent = '';
+    document.getElementById('seatModal').classList.add('active');
+    renderizarAssentos();
 }
 
-/**
- * Fecha o modal
- */
+// Fecha o modal
 function fecharModalAssentos() {
     document.getElementById('seatModal').classList.remove('active');
     assentoSelecionado = null;
 }
 
-/**
- * Renderiza o mapa de assentos - Layout vertical tipo ônibus
- */
-function renderizarMapaAssentos() {
+// Confirma a seleção
+function confirmarSelecaoAssento() {
+    if (assentoSelecionado && callbackConfirmacao) {
+        callbackConfirmacao(assentoSelecionado);
+    }
+}
+
+// Renderiza os dois decks
+function renderizarAssentos() {
     const container = document.querySelector('.bus-container');
     container.innerHTML = '';
-    
-    const ocupados = assentosOcupados.map(a => a.numero);
-    
-    // ===== DECK SUPERIOR (48 assentos) =====
-    const deckSuperior = document.createElement('div');
-    deckSuperior.className = 'deck-section upper';
-    
-    // Cabeçalho
-    const headerSup = document.createElement('div');
-    headerSup.className = 'deck-header';
-    headerSup.innerHTML = '<div class="deck-title">🟦 PISO SUPERIOR</div>';
-    deckSuperior.appendChild(headerSup);
-    
-    // Área da frente do ônibus
-    const areaFrente = document.createElement('div');
-    areaFrente.className = 'area-frente';
-    areaFrente.innerHTML = '<span class="volante">🚌</span><span>FRENTE</span>';
-    deckSuperior.appendChild(areaFrente);
-    
-    // Container dos assentos superior
-    const gridSup = document.createElement('div');
-    gridSup.className = 'bus-grid-vertical';
-    
-    // Layout: 2 colunas laterais com escada no meio (entre fileiras 3-4)
-    // Fileiras 1-3: sem escada (assentos 1-12)
-    // Fileiras 4-12: com escada no meio (assentos 13-48)
-    
-    // FILEIRAS 1-3 (assentos 1-12) - sem escada
-    for (let fileira = 0; fileira < 3; fileira++) {
-        const divFileira = criarFileiraSimples(fileira, ocupados);
-        gridSup.appendChild(divFileira);
-    }
-    
-    // FILEIRA 4 (assentos 13-16) - com escada
-    const fileiraEscada1 = criarFileiraComEscada(3, ocupados, false);
-    gridSup.appendChild(fileiraEscada1);
-    
-    // FILEIRAS 5-11 (assentos 17-44) - com escada
-    for (let fileira = 4; fileira < 11; fileira++) {
-        const divFileira = criarFileiraComEscada(fileira, ocupados, false);
-        gridSup.appendChild(divFileira);
-    }
-    
-    // FILEIRA 12 (assentos 45-48) - com escada no final
-    const fileiraFinal = criarFileiraComEscada(11, ocupados, true);
-    gridSup.appendChild(fileiraFinal);
-    
-    deckSuperior.appendChild(gridSup);
-    container.appendChild(deckSuperior);
-    
-    // ===== DECK INFERIOR (12 assentos) =====
-    const deckInferior = document.createElement('div');
-    deckInferior.className = 'deck-section lower';
-    
-    const headerInf = document.createElement('div');
-    headerInf.className = 'deck-header';
-    headerInf.innerHTML = '<div class="deck-title">🟨 PISO INFERIOR</div>';
-    deckInferior.appendChild(headerInf);
-    
-    // Área da frente inferior
-    const areaFrenteInf = document.createElement('div');
-    areaFrenteInf.className = 'area-frente inferior';
-    areaFrenteInf.innerHTML = '<span class="volante">🚌</span><span>FRENTE</span>';
-    deckInferior.appendChild(areaFrenteInf);
-    
-    // Container dos assentos inferior
-    const gridInf = document.createElement('div');
-    gridInf.className = 'bus-grid-vertical';
-    
-    // 3 fileiras de 4 assentos (49-60) - sem escada
-    for (let fileira = 0; fileira < 3; fileira++) {
-        const base = 49 + (fileira * 4);
-        const divFileira = document.createElement('div');
-        divFileira.className = 'fileira-simples';
-        
-        // 2 esquerda + espaço + 2 direita
-        const nums = [base, base + 1, null, base + 2, base + 3];
-        
-        nums.forEach(num => {
-            if (num === null) {
-                const espaco = document.createElement('div');
-                espaco.className = 'espaco-meio';
-                divFileira.appendChild(espaco);
-            } else {
-                divFileira.appendChild(criarAssento(num, ocupados.includes(num)));
-            }
-        });
-        
-        gridInf.appendChild(divFileira);
-    }
-    
-    // Escada no final do deck inferior
-    const escadaInf = document.createElement('div');
-    escadaInf.className = 'escada-final';
-    escadaInf.innerHTML = '🪜 ESCADA';
-    gridInf.appendChild(escadaInf);
-    
-    deckInferior.appendChild(gridInf);
-    container.appendChild(deckInferior);
+
+    // Renderiza Deck Superior
+    container.appendChild(criarDeckSuperior());
+
+    // Renderiza Deck Inferior
+    container.appendChild(criarDeckInferior());
 }
 
-/**
- * Cria fileira simples (sem escada) - fileiras 1-3
- */
-function criarFileiraSimples(fileira, ocupados) {
-    const div = document.createElement('div');
-    div.className = 'fileira-simples';
-    
-    const base = (fileira * 4) + 1;
-    const nums = [base, base + 1, null, base + 2, base + 3];
-    
-    nums.forEach(num => {
-        if (num === null) {
-            const espaco = document.createElement('div');
-            espaco.className = 'espaco-meio';
-            div.appendChild(espaco);
-        } else {
-            div.appendChild(criarAssento(num, ocupados.includes(num)));
-        }
-    });
-    
-    return div;
+// Cria o Deck Superior (48 assentos) - Layout exato conforme imagem
+function criarDeckSuperior() {
+    const deck = document.createElement('div');
+    deck.className = 'deck-section upper';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'deck-header';
+    header.innerHTML = '<div class="deck-title">🟦 PISO SUPERIOR (48 assentos)</div>';
+    deck.appendChild(header);
+
+    // Área da frente
+    const frente = document.createElement('div');
+    frente.className = 'area-frente';
+    frente.innerHTML = '<span class="volante">🚌</span> FRENTE';
+    deck.appendChild(frente);
+
+    // Container do grid
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'bus-grid-vertical';
+
+    // Fileiras 1-2: Assentos 1-8 (completo)
+    gridContainer.appendChild(criarFileiraCompleta(1));
+    gridContainer.appendChild(criarFileiraCompleta(5));
+
+    // Fileira 3: Assentos 9-10 (esq) + Escada (dir)
+    gridContainer.appendChild(criarFileiraEscada(9));
+
+    // Fileira 4: Assentos 11-12 (esq) + Cafeteria/Frigobar (dir)
+    gridContainer.appendChild(criarFileiraCafeteria(11));
+
+    // Fileiras 5-12: Assentos 13-48 (completo)
+    for (let i = 4; i < 12; i++) {
+        gridContainer.appendChild(criarFileiraCompleta(1 + (i * 4)));
+    }
+
+    // Última fileira especial: 45, 46, Frigobar, 48, 47
+    gridContainer.appendChild(criarFileiraFinalFrigobar());
+
+    deck.appendChild(gridContainer);
+    return deck;
 }
 
-/**
- * Cria fileira com escada no meio
- */
-function criarFileiraComEscada(fileira, ocupados, isUltima) {
-    const div = document.createElement('div');
-    div.className = 'fileira-com-escada';
+// Cria o Deck Inferior (12 assentos) - Layout exato conforme imagem
+function criarDeckInferior() {
+    const deck = document.createElement('div');
+    deck.className = 'deck-section lower';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'deck-header';
+    header.innerHTML = '<div class="deck-title">🟨 PISO INFERIOR (12 assentos)</div>';
+    deck.appendChild(header);
+
+    // Container do grid
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'bus-grid-vertical';
+
+    // Área da frente: Cama motorista (esq) + Entrada (dir)
+    const frente = document.createElement('div');
+    frente.className = 'area-frente inferior';
+    frente.style.display = 'grid';
+    frente.style.gridTemplateColumns = '1fr 1fr';
+    frente.style.gap = '8px';
+    frente.style.padding = '10px';
+    frente.innerHTML = `
+        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; font-size: 0.7rem; text-align: center;">
+            <div style="font-size: 1rem; margin-bottom: 2px;">🛏️</div>
+            CAMA MOTORISTA
+        </div>
+        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; font-size: 0.7rem; text-align: center;">
+            <div style="font-size: 1rem; margin-bottom: 2px;">🚪</div>
+            ENTRADA
+        </div>
+    `;
+    gridContainer.appendChild(frente);
+
+    // Sala VIP (esq) + Banheiro (dir)
+    const areaServicos = document.createElement('div');
+    areaServicos.style.display = 'grid';
+    areaServicos.style.gridTemplateColumns = '1fr 1fr';
+    areaServicos.style.gap = '8px';
+    areaServicos.style.marginBottom = '8px';
+    areaServicos.innerHTML = `
+        <div style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white; padding: 15px 8px; border-radius: 8px; text-align: center; font-size: 0.7rem; font-weight: bold;">
+            <div style="font-size: 1.1rem; margin-bottom: 4px;">🛋️</div>
+            SALA VIP
+        </div>
+        <div style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white; padding: 15px 8px; border-radius: 8px; text-align: center; font-size: 0.7rem; font-weight: bold;">
+            <div style="font-size: 1.1rem; margin-bottom: 4px;">🚻</div>
+            BANHEIRO
+        </div>
+    `;
+    gridContainer.appendChild(areaServicos);
+
+    // Porta lateral
+    const porta = document.createElement('div');
+    porta.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
+    porta.style.color = 'white';
+    porta.style.padding = '6px';
+    porta.style.borderRadius = '4px';
+    porta.style.textAlign = 'center';
+    porta.style.fontSize = '0.6rem';
+    porta.style.fontWeight = 'bold';
+    porta.style.marginBottom = '10px';
+    porta.style.letterSpacing = '3px';
+    porta.textContent = '════ PORTA ════';
+    gridContainer.appendChild(porta);
+
+    // 3 fileiras de assentos: 49-52, 53-56, 57-60
+    gridContainer.appendChild(criarFileiraCompleta(49));
+    gridContainer.appendChild(criarFileiraCompleta(53));
+    gridContainer.appendChild(criarFileiraCompleta(57));
+
+    // Bagageiro com Frigobar acima
+    const bagageiroArea = document.createElement('div');
+    bagageiroArea.style.position = 'relative';
+    bagageiroArea.style.marginTop = '8px';
     
-    const base = (fileira * 4) + 1;
+    // Frigobar acima
+    const frigobar = document.createElement('div');
+    frigobar.style.background = '#facc15';
+    frigobar.style.color = '#854d0e';
+    frigobar.style.padding = '4px 8px';
+    frigobar.style.borderRadius = '4px 4px 0 0';
+    frigobar.style.textAlign = 'center';
+    frigobar.style.fontSize = '0.6rem';
+    frigobar.style.fontWeight = 'bold';
+    frigobar.textContent = '🧊 FRIGOBAR';
+    bagageiroArea.appendChild(frigobar);
     
+    // Bagageiro
+    const bagageiro = document.createElement('div');
+    bagageiro.className = 'escada-final';
+    bagageiro.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
+    bagageiro.style.borderRadius = '0 0 8px 8px';
+    bagageiro.style.marginTop = '0';
+    bagageiro.innerHTML = '🧳 BAGAGEIRO';
+    bagageiroArea.appendChild(bagageiro);
+    
+    gridContainer.appendChild(bagageiroArea);
+
+    deck.appendChild(gridContainer);
+    return deck;
+}
+
+// Cria uma fileira completa (4 assentos: 2 + corredor + 2)
+function criarFileiraCompleta(numInicial) {
+    const fileira = document.createElement('div');
+    fileira.className = 'fileira-simples';
+
     // Lado esquerdo (2 assentos)
-    const ladoEsq = document.createElement('div');
-    ladoEsq.className = 'lado-esquerdo';
-    ladoEsq.appendChild(criarAssento(base, ocupados.includes(base)));
-    ladoEsq.appendChild(criarAssento(base + 1, ocupados.includes(base + 1)));
-    div.appendChild(ladoEsq);
-    
-    // Escada no meio
+    const esquerdo = document.createElement('div');
+    esquerdo.className = 'lado-esquerdo';
+    esquerdo.appendChild(criarPoltrona(numInicial));
+    esquerdo.appendChild(criarPoltrona(numInicial + 1));
+    fileira.appendChild(esquerdo);
+
+    // Corredor
+    const corredor = document.createElement('div');
+    corredor.className = 'espaco-meio';
+    corredor.innerHTML = '│││';
+    fileira.appendChild(corredor);
+
+    // Lado direito (2 assentos)
+    const direito = document.createElement('div');
+    direito.className = 'lado-direito';
+    direito.appendChild(criarPoltrona(numInicial + 2));
+    direito.appendChild(criarPoltrona(numInicial + 3));
+    fileira.appendChild(direito);
+
+    return fileira;
+}
+
+// Cria fileira com escada (fileira 3: 9-10 + escada)
+function criarFileiraEscada(numInicial) {
+    const fileira = document.createElement('div');
+    fileira.className = 'fileira-simples';
+
+    // Lado esquerdo (2 assentos: 9-10)
+    const esquerdo = document.createElement('div');
+    esquerdo.className = 'lado-esquerdo';
+    esquerdo.appendChild(criarPoltrona(numInicial));
+    esquerdo.appendChild(criarPoltrona(numInicial + 1));
+    fileira.appendChild(esquerdo);
+
+    // Corredor
+    const corredor = document.createElement('div');
+    corredor.className = 'espaco-meio';
+    corredor.innerHTML = '│││';
+    fileira.appendChild(corredor);
+
+    // Lado direito: ESCADA (ocupa espaço de 2 assentos)
     const escada = document.createElement('div');
     escada.className = 'escada-meio';
-    if (fileira === 3) {
-        escada.innerHTML = '🪜<br>ESC';
-        escada.classList.add('inicio');
-    } else if (isUltima) {
-        escada.innerHTML = '🪜<br>FIM';
-        escada.classList.add('fim');
-    } else {
-        escada.innerHTML = '⬇️';
-        escada.classList.add('continua');
-    }
-    div.appendChild(escada);
-    
-    // Lado direito (2 assentos)
-    const ladoDir = document.createElement('div');
-    ladoDir.className = 'lado-direito';
-    ladoDir.appendChild(criarAssento(base + 2, ocupados.includes(base + 2)));
-    ladoDir.appendChild(criarAssento(base + 3, ocupados.includes(base + 3)));
-    div.appendChild(ladoDir);
-    
-    return div;
+    escada.style.gridColumn = 'span 2';
+    escada.innerHTML = `
+        <div style="font-size: 1rem;">🚶</div>
+        <div>ESCADA</div>
+    `;
+    fileira.appendChild(escada);
+
+    return fileira;
 }
 
-/**
- * Cria um elemento de assento
- */
-function criarAssento(numero, ocupado) {
-    const div = document.createElement('div');
-    div.className = 'poltrona';
-    div.dataset.assento = numero;
-    
-    // Número do assento
-    const numSpan = document.createElement('span');
-    numSpan.className = 'numero-poltrona';
-    numSpan.textContent = numero;
-    div.appendChild(numSpan);
-    
-    if (ocupado) {
-        div.classList.add('ocupada');
-        const info = assentosOcupados.find(a => a.numero === numero);
-        div.title = `Ocupado: ${info ? info.nome : ''}`;
-    } else {
-        div.addEventListener('click', () => selecionarAssento(numero));
-    }
-    
-    return div;
+// Cria fileira com cafeteria (fileira 4: 11-12 + cafeteria)
+function criarFileiraCafeteria(numInicial) {
+    const fileira = document.createElement('div');
+    fileira.className = 'fileira-simples';
+
+    // Lado esquerdo (2 assentos: 11-12)
+    const esquerdo = document.createElement('div');
+    esquerdo.className = 'lado-esquerdo';
+    esquerdo.appendChild(criarPoltrona(numInicial));
+    esquerdo.appendChild(criarPoltrona(numInicial + 1));
+    fileira.appendChild(esquerdo);
+
+    // Corredor
+    const corredor = document.createElement('div');
+    corredor.className = 'espaco-meio';
+    corredor.innerHTML = '│││';
+    fileira.appendChild(corredor);
+
+    // Lado direito: CAFETERIA/FRIGOBAR
+    const cafeteria = document.createElement('div');
+    cafeteria.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
+    cafeteria.style.color = 'white';
+    cafeteria.style.borderRadius = '8px';
+    cafeteria.style.padding = '8px';
+    cafeteria.style.textAlign = 'center';
+    cafeteria.style.fontSize = '0.6rem';
+    cafeteria.style.fontWeight = 'bold';
+    cafeteria.style.gridColumn = 'span 2';
+    cafeteria.style.display = 'flex';
+    cafeteria.style.flexDirection = 'column';
+    cafeteria.style.alignItems = 'center';
+    cafeteria.style.justifyContent = 'center';
+    cafeteria.style.minHeight = '50px';
+    cafeteria.innerHTML = `
+        <div style="font-size: 0.9rem; margin-bottom: 2px;">☕ 🧊</div>
+        <div>CAFETERIA</div>
+        <div style="font-size: 0.5rem; margin-top: 2px;">E FRIGOBAR</div>
+    `;
+    fileira.appendChild(cafeteria);
+
+    return fileira;
 }
 
-/**
- * Seleciona um assento
- */
-function selecionarAssento(numero) {
-    document.querySelectorAll('.poltrona.selected').forEach(el => {
-        el.classList.remove('selected');
+// Cria última fileira com frigobar no meio: 45, 46, FRIGOBAR, 48, 47
+function criarFileiraFinalFrigobar() {
+    const fileira = document.createElement('div');
+    fileira.className = 'fileira-simples';
+
+    // Lado esquerdo: 45, 46
+    const esquerdo = document.createElement('div');
+    esquerdo.className = 'lado-esquerdo';
+    esquerdo.appendChild(criarPoltrona(45));
+    esquerdo.appendChild(criarPoltrona(46));
+    fileira.appendChild(esquerdo);
+
+    // Meio: FRIGOBAR (no lugar do corredor)
+    const frigobar = document.createElement('div');
+    frigobar.style.background = '#facc15';
+    frigobar.style.color = '#854d0e';
+    frigobar.style.borderRadius = '6px';
+    frigobar.style.padding = '4px';
+    frigobar.style.textAlign = 'center';
+    frigobar.style.fontSize = '0.55rem';
+    frigobar.style.fontWeight = 'bold';
+    frigobar.style.writingMode = 'vertical-rl';
+    frigobar.style.textOrientation = 'mixed';
+    frigobar.style.display = 'flex';
+    frigobar.style.alignItems = 'center';
+    frigobar.style.justifyContent = 'center';
+    frigobar.textContent = '🧊 FRIGOBAR';
+    fileira.appendChild(frigobar);
+
+    // Lado direito: 48, 47 (ordem invertida: 48 na frente, 47 atrás)
+    const direito = document.createElement('div');
+    direito.className = 'lado-direito';
+    direito.appendChild(criarPoltrona(48));
+    direito.appendChild(criarPoltrona(47));
+    fileira.appendChild(direito);
+
+    return fileira;
+}
+
+// Cria uma poltrona individual
+function criarPoltrona(numero) {
+    const poltrona = document.createElement('div');
+    poltrona.className = 'poltrona';
+    poltrona.dataset.numero = numero;
+
+    const numeroEl = document.createElement('span');
+    numeroEl.className = 'numero-poltrona';
+    numeroEl.textContent = numero.toString().padStart(2, '0');
+    poltrona.appendChild(numeroEl);
+
+    // Verifica se está ocupada
+    if (assentosOcupados.includes(numero)) {
+        poltrona.classList.add('ocupada');
+        poltrona.title = `Assento ${numero} - Ocupado`;
+    } else {
+        poltrona.addEventListener('click', () => selecionarPoltrona(numero));
+    }
+
+    return poltrona;
+}
+
+// Seleciona uma poltrona
+function selecionarPoltrona(numero) {
+    // Remove seleção anterior
+    document.querySelectorAll('.poltrona.selected').forEach(p => {
+        p.classList.remove('selected');
     });
-    
-    const elemento = document.querySelector(`[data-assento="${numero}"]`);
-    if (elemento) {
-        elemento.classList.add('selected');
+
+    // Seleciona nova
+    const poltrona = document.querySelector(`[data-numero="${numero}"]`);
+    if (poltrona) {
+        poltrona.classList.add('selected');
         assentoSelecionado = numero;
-        atualizarBotaoConfirmar();
+        document.getElementById('confirmSeatBtn').disabled = false;
+        document.getElementById('selectedSeatDisplay').textContent = numero.toString().padStart(2, '0');
     }
 }
-
-/**
- * Atualiza o botão de confirmar
- */
-function atualizarBotaoConfirmar() {
-    const btn = document.getElementById('confirmSeatBtn');
-    const display = document.getElementById('selectedSeatDisplay');
-    
-    if (assentoSelecionado) {
-        btn.disabled = false;
-        display.textContent = assentoSelecionado;
-    } else {
-        btn.disabled = true;
-        display.textContent = '';
-    }
-}
-
-/**
- * Confirma a seleção
- */
-function confirmarSelecaoAssento() {
-    if (!assentoSelecionado || !callbackConfirmacao) return;
-    callbackConfirmacao(assentoSelecionado);
-    fecharModalAssentos();
-}
-
-// Expõe funções globais
-window.initSelecaoAssento = initSelecaoAssento;
-window.abrirModalAssentos = abrirModalAssentos;
-window.fecharModalAssentos = fecharModalAssentos;
-window.confirmarSelecaoAssento = confirmarSelecaoAssento;
