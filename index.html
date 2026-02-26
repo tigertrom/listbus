@@ -13,6 +13,7 @@
     <!-- Scripts compartilhados -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/selecao_assento.js"></script>
     <script src="js/cadastro_resp.js"></script>
     
 <style>
@@ -272,7 +273,8 @@
             display: none !important;
         }
 
-        /* Modal Styles */
+        /* ===== MODAL DE SELEÇÃO DE ASSENTOS - LAYOUT VERTICAL ===== */
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -280,11 +282,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             z-index: 1000;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 10px;
             overflow-y: auto;
         }
 
@@ -295,8 +297,9 @@
         .modal-content {
             background: var(--white);
             border-radius: 20px;
-            width: min(450px, 95vw);
-            max-height: 85vh;
+            width: 100%;
+            max-width: 400px;
+            max-height: 95vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -312,8 +315,7 @@
         .modal-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: var(--white);
-            padding: 20px 30px;
-            border-radius: 20px 20px 0 0;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -322,7 +324,7 @@
 
         .modal-header h2 {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
         }
 
         .close-btn {
@@ -331,8 +333,8 @@
             color: var(--white);
             font-size: 1.5rem;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -345,282 +347,277 @@
         }
 
         .modal-body {
-            padding: 10px;
+            padding: 15px;
             overflow-y: auto;
             flex: 1;
-            min-height: 0;
+            background: #f8fafc;
         }
 
-        /* CORREÇÃO: Bus wrapper centralizado */
         .bus-wrapper {
-            background: var(--gray-100);
-            border-radius: 15px;
-            padding: 20px;
-            border: 3px solid var(--gray-300);
-            display: flex;
-            justify-content: center; /* Centraliza horizontalmente */
-            align-items: center; /* Centraliza verticalmente */
-            position: relative;
+            background: transparent;
+            padding: 0;
+            border: none;
         }
 
-        /* CORREÇÃO: Área do motorista apenas no deck inferior, posicionada absoluta à esquerda do wrapper */
-        .driver-area {
-            position: absolute;
-            left: 20px; /* Distância da borda esquerda do wrapper */
-            top: 75%; /* Posicionado no deck inferior (aproximadamente) */
-            transform: translateY(-50%);
-            width: 50px;
-            height: 70px;
-            background: var(--gray-200);
-            border-radius: 0 45px 45px 0;
-            border: 3px solid var(--gray-300);
-            border-left: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            z-index: 10;
-        }
-    /* ÁREA DO MOTORISTA NO DECK INFERIOR - ACIMA DOS ASSENTOS */
-.driver-area-lower {
-    width: 100%;
-    max-width: 280px; /* Mesma largura máxima das fileiras de assentos */
-    height: 50px;
-    background: var(--gray-200);
-    border: 3px solid var(--gray-300);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    color: var(--gray-600);
-    margin-bottom: 15px; /* Espaço entre motorista e assentos */
-    font-weight: 600;
-}
-
-        /* CORREÇÃO: Bus container sem margem esquerda, centralizado */
         .bus-container {
             display: flex;
             flex-direction: column;
             gap: 20px;
             width: 100%;
-            max-width: 320px; /* Largura máxima para manter proporção */
-            margin: 0 auto; /* Centraliza o container */
         }
 
+        /* Decks */
         .deck-section {
             background: var(--white);
             border-radius: 15px;
-            padding: 15px 10px;
-            border: 3px solid var(--gray-200);
-            width: 100%;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .deck-section.upper {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            border-color: #3b82f6;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+            border: 2px solid #7dd3fc;
         }
 
         .deck-section.lower {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-color: #f59e0b;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative; /* Para posicionamento relativo se necessário */
-        }
-
-        .deck-title {
-            text-align: center;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--gray-800);
-            margin-bottom: 12px;
-            padding: 6px 12px;
-            background: var(--white);
-            border-radius: 30px;
-            display: inline-block;
-            box-shadow: var(--shadow);
-            border: 2px solid var(--gray-200);
+            background: linear-gradient(180deg, #fef9c3 0%, #fde047 100%);
+            border: 2px solid #facc15;
         }
 
         .deck-header {
             text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .deck-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1e293b;
+            background: rgba(255,255,255,0.8);
+            padding: 6px 15px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* Área da frente */
+        .area-frente {
+            background: linear-gradient(135deg, #475569 0%, #334155 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.85rem;
             margin-bottom: 10px;
-            width: 100%;
-        }
-
-        .deck-layout {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .deck-side {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .right-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            width: 100%;
-            align-items: center;
-        }
-
-        /* Grid para 4 assentos (2 + corredor + 2) - usado em ambos os decks */
-        .seat-row-4 {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr) 25px repeat(2, 1fr);
-            gap: 6px;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            max-width: 280px;
+            gap: 8px;
         }
 
-        /* Grid para 3 assentos (1 + corredor + 2) - REMOVIDO, não usado mais */
-        .seat-row-3 {
-            display: none; /* Oculto pois não será usado */
+        .area-frente.inferior {
+            background: linear-gradient(135deg, #92400e 0%, #b45309 100%);
         }
 
-        .seat {
-            aspect-ratio: 1;
-            border: 2px solid var(--gray-300);
-            border-radius: 6px;
+        .volante {
+            font-size: 1.2rem;
+        }
+
+        /* Grid vertical */
+        .bus-grid-vertical {
             display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Fileiras */
+        .fileira-simples {
+            display: grid;
+            grid-template-columns: 1fr 1fr 40px 1fr 1fr;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .fileira-com-escada {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .lado-esquerdo, .lado-direito {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        /* Espaço no meio */
+        .espaco-meio {
+            width: 100%;
+            height: 100%;
+            min-height: 50px;
+        }
+
+        /* Escada no meio */
+        .escada-meio {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 0.65rem;
+            font-weight: bold;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .escada-meio.inicio {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        }
+
+        .escada-meio.fim {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+
+        /* Escada no final */
+        .escada-final {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        /* Poltronas */
+        .poltrona {
+            aspect-ratio: 0.9;
+            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+            border: 2px solid #cbd5e1;
+            border-radius: 10px 10px 6px 6px;
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: var(--white);
-            font-weight: 700;
-            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
-            color: var(--gray-800);
+            transition: all 0.2s ease;
             position: relative;
-            min-height: 32px;
-            width: 100%;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 55px;
         }
 
-        .seat:hover:not(.occupied) {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary);
-            background: #eff6ff;
+        /* Encosto da poltrona */
+        .poltrona::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 65%;
+            height: 10px;
+            background: #94a3b8;
+            border-radius: 6px 6px 0 0;
         }
 
-        .seat.selected {
-            background: var(--primary);
-            color: var(--white);
-            border-color: var(--primary);
-            transform: scale(1.05);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        .poltrona:hover:not(.ocupada) {
+            transform: translateY(-3px) scale(1.05);
+            border-color: #3b82f6;
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
         }
 
-        .seat.occupied {
-            background: var(--gray-300);
+        .poltrona.selected {
+            background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #1d4ed8;
+            color: white;
+        }
+
+        .poltrona.selected::before {
+            background: #1e40af;
+        }
+
+        .poltrona.ocupada {
+            background: linear-gradient(145deg, #cbd5e1 0%, #94a3b8 100%);
+            border-color: #64748b;
             cursor: not-allowed;
-            opacity: 0.6;
+            opacity: 0.7;
         }
 
-        .seat.occupied::after {
+        .poltrona.ocupada::after {
             content: '✓';
             position: absolute;
-            font-size: 0.9rem;
-            color: var(--gray-600);
-            font-weight: 900;
+            font-size: 1.4rem;
+            color: #334155;
+            font-weight: bold;
+            z-index: 1;
         }
 
-        .corridor {
-            text-align: center;
-            color: var(--gray-400);
-            font-size: 0.8rem;
-            font-weight: 300;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
+        .numero-poltrona {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            z-index: 1;
         }
 
-        .empty-area {
-            width: 100px;
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--gray-400);
-            font-size: 0.7rem;
-            border: 2px dashed var(--gray-300);
-            border-radius: 8px;
-            background: var(--gray-50);
+        .poltrona.selected .numero-poltrona {
+            color: white;
         }
 
-        .side-label {
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--gray-600);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-
+        /* Legenda */
         .legend {
             display: flex;
-            gap: 12px;
+            gap: 15px;
             justify-content: center;
             margin-top: 15px;
             flex-wrap: wrap;
-            padding-top: 12px;
-            border-top: 2px solid var(--gray-200);
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 0.75rem;
-            color: var(--gray-700);
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #475569;
             font-weight: 500;
         }
 
         .legend-box {
-            width: 22px;
-            height: 22px;
-            border-radius: 5px;
-            border: 2px solid var(--gray-300);
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 2px solid #cbd5e1;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             font-weight: 700;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .legend-box.available { background: var(--white); color: var(--gray-800); }
-        .legend-box.selected { background: var(--primary); border-color: var(--primary); color: var(--white); }
-        .legend-box.occupied { background: var(--gray-300); opacity: 0.6; color: var(--gray-600); }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: var(--white);
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 10px;
+        .legend-box.disponivel {
+            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+            border-color: #cbd5e1;
         }
 
+        .legend-box.selecionado {
+            background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #1d4ed8;
+            color: white;
+        }
+
+        .legend-box.ocupado {
+            background: #cbd5e1;
+            opacity: 0.7;
+        }
+
+        /* Animações */
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -651,474 +648,237 @@
             75% { transform: translateX(10px); }
         }
 
-        @media (max-width: 600px) {
+        /* Responsivo */
+        @media (max-width: 400px) {
             .modal-content {
-                width: 100%;
-                height: 100vh;
-                max-height: 100vh;
-                border-radius: 0;
-                margin: 0;
-            }
-            
-            .modal-overlay {
-                padding: 0;
-            }
-            
-            .modal-body {
-                padding: 15px;
-            }
-            
-            .seat-row-4 {
                 max-width: 100%;
-                gap: 5px;
+                margin: 5px;
             }
             
-            .seat {
-                min-height: 28px;
-                font-size: 0.7rem;
-                border-radius: 5px;
+            .poltrona {
+                min-height: 48px;
             }
             
-            .bus-wrapper {
-                padding: 15px 10px;
-                border-radius: 12px;
+            .numero-poltrona {
+                font-size: 0.9rem;
             }
             
-            /* CORREÇÃO: Driver area em mobile */
-            .driver-area {
-                width: 60px;
-                height: 60px;
-                font-size: 1rem;
-                left: 100px;
-                top: 72%;
+            .escada-meio {
+                font-size: 0.6rem;
+                padding: 6px 2px;
             }
-            
-            .bus-container {
-                max-width: 100%;
-                gap: 15px;
-            }
-            
-            .deck-section {
-                padding: 12px 8px;
-            }
-            
-            .corridor {
-                font-size: 0.7rem;
-            }
-            
-            .deck-title {
-                font-size: 0.75rem;
-                padding: 4px 10px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Link para área administrativa -->
-    <div class="admin-link">
-        <a href="#" onclick="handleAdminAccess(event)">🔐 Área Administrativa</a>
-    </div>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <h1>🚌 Sistema de Cadastro de Voluntários</h1>
+            <p>Excursão Solidária 2024</p>
+        </div>
+    </header>
 
-    <div class="container">
-        <header>
-            <div class="headsind" id="registrationHeadsind">
-                <img src="image/cabeçalho sindguardas.png" alt="Sindguardas-SP" class="header-image">
-                <h1>🚌 Voluntariado em Viagens</h1>
-                <p>Cadastre-se para participar das nossas viagens solidárias</p>
-            </div>
-        </header>
-
-        <!-- Formulário Principal -->
-        <div class="card" id="registrationCard">
-            <h2>
-                <span>📝</span>
-                Dados do Voluntário
-            </h2>
-            
-            <div class="info-text">
-                <strong>📋 Instruções:</strong> Preencha seus dados abaixo. Menores de idade devem estar acompanhados de um responsável já cadastrado.
-            </div>
-
-            <div class="success-message" id="successMessage">
-                ✅ Cadastro realizado com sucesso! Você receberá um email de confirmação.
-            </div>
-            <div class="error-message" id="errorMessage"></div>
-            
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Formulário de Cadastro -->
+        <section class="form-section">
+            <h2>📋 Dados Pessoais</h2>
             <form id="volunteerForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="firstName">Nome <span class="required">*</span></label>
+                        <label for="firstName">Nome *</label>
                         <input type="text" id="firstName" required placeholder="Digite seu nome">
                     </div>
                     <div class="form-group">
-                        <label for="lastName">Sobrenome <span class="required">*</span></label>
+                        <label for="lastName">Sobrenome *</label>
                         <input type="text" id="lastName" required placeholder="Digite seu sobrenome">
                     </div>
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">E-mail *</label>
+                        <input type="email" id="email" required placeholder="seu@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Telefone *</label>
+                        <input type="tel" id="phone" required placeholder="(00) 00000-0000">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="rg">RG *</label>
+                        <input type="text" id="rg" required placeholder="00.000.000-0">
+                    </div>
+                    <div class="form-group">
+                        <label for="cpf">CPF</label>
+                        <input type="text" id="cpf" placeholder="000.000.000-00">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="birthDate">Data de Nascimento *</label>
+                        <input type="date" id="birthDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="emergencyContact">Contato de Emergência</label>
+                        <input type="text" id="emergencyContact" placeholder="Nome e telefone">
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label for="email">E-mail <span class="required">*</span></label>
-                    <input type="email" id="email" required placeholder="seu@email.com">
+                    <label for="medicalInfo">Informações Médicas Relevantes</label>
+                    <textarea id="medicalInfo" rows="3" placeholder="Alergias, medicamentos, condições especiais..."></textarea>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="rg">RG <span class="required">*</span></label>
-                        <input type="text" id="rg" required placeholder="00.000.000-0" maxlength="12">
+                <!-- Seção de Responsável (para menores) -->
+                <div id="responsavelSection" class="hidden">
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Atenção:</strong> Você é menor de idade. Selecione um responsável legal.
                     </div>
+                    
                     <div class="form-group">
-                        <label for="cpf">CPF <span class="optional">(opcional)</span></label>
-                        <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="phone">Telefone <span class="required">*</span></label>
-                        <input type="tel" id="phone" required placeholder="(00) 00000-0000" maxlength="15">
-                    </div>
-                    <div class="form-group">
-                        <label for="birthDate">Data de Nascimento <span class="required">*</span></label>
-                        <input type="date" id="birthDate" required onchange="checkAge()">
-                    </div>
-                </div>
-
-                <!-- Seção para menores de idade -->
-                <div id="responsavelSection" class="responsavel-section hidden">
-                    <h4>👨‍👩‍👧 Responsável Legal</h4>
-                    <p style="font-size: 0.9rem; color: #78350f; margin-bottom: 15px;">
-                        Como você é menor de idade, precisa selecionar um responsável que já esteja cadastrado e com assento reservado.
-                    </p>
-                    <div class="form-group">
-                        <label for="responsavelSelect">Selecione o Responsável <span class="required">*</span></label>
-                        <select id="responsavelSelect" onchange="updateResponsavelInfo()">
-                            <option value="">-- Selecione um responsável --</option>
+                        <label for="responsavelSelect">Responsável Legal *</label>
+                        <select id="responsavelSelect">
+                            <option value="">Carregando responsáveis...</option>
                         </select>
                     </div>
+
                     <div id="responsavelInfo" class="responsavel-info hidden">
-                        <!-- Info do responsável selecionado -->
+                        <h4>📄 Dados do Responsável</h4>
+                        <p><strong>Nome:</strong> <span id="respNome"></span></p>
+                        <p><strong>RG:</strong> <span id="respRG"></span></p>
+                        <p><strong>Telefone:</strong> <span id="respPhone"></span></p>
+                        <p><strong>Parentesco:</strong> <span id="respParentesco">Responsável Legal</span></p>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="emergencyContact">Contato de Emergência <span class="optional">(opcional)</span></label>
-                    <input type="text" id="emergencyContact" placeholder="Nome e telefone de alguém próximo">
+                <div class="form-actions">
+                    <button type="button" id="btnSelecionarAssento" onclick="openSeatModal()">
+                        🪑 Selecionar Assento e Confirmar Cadastro
+                    </button>
                 </div>
-
-                <div class="form-group">
-                    <label for="medicalInfo">Informações Médicas Relevantes <span class="optional">(opcional)</span></label>
-                    <textarea id="medicalInfo" rows="3" placeholder="Alergias, restrições alimentares, condições especiais..."></textarea>
-                </div>
-
-                <button type="button" id="selectSeatBtn" onclick="openSeatModal()">
-                    Selecionar Assento 🪑
-                </button>
             </form>
-        </div>
-    </div>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+        </section>
+    </main>
 
     <!-- Modal de Seleção de Assentos -->
     <div class="modal-overlay" id="seatModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>🪑 Selecione seu Assento</h2>
-                <button class="close-btn" onclick="closeSeatModal()">×</button>
+                <button class="close-btn" onclick="fecharModalAssentos()">×</button>
             </div>
             <div class="modal-body">
-                <div class="info-text" style="margin-bottom: 25px;">
-                    <strong>🚌 Dica:</strong> O deck superior (azul) tem 48 assentos. O deck inferior (amarelo) tem 12 assentos na parte de trás do ônibus.
+                <div class="info-text" style="margin-bottom: 15px; font-size: 0.85rem; padding: 10px;">
+                    <strong>🚌 Dica:</strong> Escolha seu assento. O piso superior tem 48 lugares com escada no meio. O inferior tem 12 lugares.
                 </div>
 
                 <div class="bus-wrapper">            
                     <div class="bus-container">
-                        <!-- DECK SUPERIOR -->
-                        <div class="deck-section upper">
-                            <div class="deck-header">
-                                <div class="deck-title">🟦 DECK SUPERIOR (48 assentos)</div>
-                            </div>
-                            <div class="deck-layout">                                                            
-                                <div class="deck-side">
-                                    <div class="right-grid" id="upperRightSeats"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- DECK INFERIOR -->
-<div class="deck-section lower">
-    <div class="deck-header">
-        <div class="deck-title">🟨 DECK INFERIOR (12 assentos)</div>
-    </div>
-    
-    <!-- ÁREA DO MOTORISTA - AGORA NO TOPO -->
-    <div class="driver-area-lower">
-        <span>🚌 Área do Motorista</span>
-    </div>
-    
-    <div class="deck-layout">
-        <div class="deck-side">
-            <div class="right-grid" id="lowerRightSeats"></div>
-        </div>
-    </div>
-</div>
+                        <!-- O JavaScript vai renderizar os decks aqui -->
+                    </div>
+                </div>
 
                 <div class="legend">
                     <div class="legend-item">
-                        <div class="legend-box available">12</div>
+                        <div class="legend-box disponivel"></div>
                         <span>Disponível</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-box selected">12</div>
+                        <div class="legend-box selecionado"></div>
                         <span>Selecionado</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-box occupied">✓</div>
+                        <div class="legend-box ocupado">✓</div>
                         <span>Ocupado</span>
                     </div>
                 </div>
 
-                <div style="margin-top: 30px; text-align: center;">
-                    <button id="confirmSeatBtn" onclick="confirmSeatSelection()" disabled>
-                        Confirmar Cadastro no Assento <span id="selectedSeatDisplay" style="font-weight: 900;"></span>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button id="confirmSeatBtn" onclick="confirmarSelecaoAssento()" disabled style="padding: 14px; font-size: 1rem;">
+                        Confirmar Assento <span id="selectedSeatDisplay" style="font-weight: 900;"></span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/selecao_assento.js"></script>
+    <script src="js/cadastro_resp.js"></script>
+
     <script>
-        // ==========================================
-        // LÓGICA DA PÁGINA DE CADASTRO - index.html
-        // ==========================================
-        
-        let volunteers = [];
-        let volunteersPublico = []; // NOVO: Array para coleção pública
-        let selectedSeat = null;
-        let tempFormData = null;
+        // Variáveis globais
         let isMinor = false;
         let selectedResponsavel = null;
+        let tempFormData = null;
 
-        const seatModal = document.getElementById('seatModal');
-
-        // ==========================================
-        // FUNÇÕES DE ADMIN (globais para o link funcionar)
-        // ==========================================
-        
-        // Função para verificar se é admin
-        async function checkIfAdmin(email) {
-            try {
-                const adminDoc = await db.collection('admins_listbusy').doc(email).get();
-                if (adminDoc.exists) {
-                    const data = adminDoc.data();
-                    return data.regra === 'admin' || data.regra === 'administrador';
-                }
-                return false;
-            } catch (error) {
-                console.error('Erro ao verificar admin:', error);
-                return false;
-            }
-        }
-
-        // Função para acessar área administrativa
-        async function handleAdminAccess(event) {
-            event.preventDefault();
+        // Verifica idade ao mudar a data de nascimento
+        document.getElementById('birthDate').addEventListener('change', function() {
+            const birthDate = new Date(this.value);
+            const today = new Date();
+            const age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
             
-            const user = auth.currentUser;
+            const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
             
-            if (user) {
-                // Já está logado, verifica se é admin
-                const isAdmin = await checkIfAdmin(user.email);
-                if (isAdmin) {
-                    window.location.href = 'admin.html';
-                } else {
-                    alert('Você não tem permissão de administrador.');
-                    await auth.signOut();
-                }
-            } else {
-                // Não está logado, abre popup do Google
-                try {
-                    const provider = new firebase.auth.GoogleAuthProvider();
-                    const result = await auth.signInWithPopup(provider);
-                    const loggedUser = result.user;
-                    
-                    const isAdmin = await checkIfAdmin(loggedUser.email);
-                    
-                    if (isAdmin) {
-                        window.location.href = 'admin.html';
-                    } else {
-                        alert(`O email ${loggedUser.email} não tem permissão de administrador.`);
-                        await auth.signOut();
-                    }
-                } catch (error) {
-                    if (error.code === 'auth/popup-closed-by-user') {
-                        console.log('Login cancelado pelo usuário');
-                    } else if (error.code === 'auth/popup-blocked') {
-                        alert('Popup bloqueado! Permita popups para este site.');
-                    } else {
-                        console.error('Erro no login:', error);
-                        alert('Erro ao fazer login. Tente novamente.');
-                    }
-                }
-            }
-        }
-
-        // ==========================================
-        // FUNÇÃO PARA SALVAR NA COLEÇÃO PÚBLICA
-        // ==========================================
-
-        /**
-         * Salva o voluntário em ambas as coleções:
-         * - volunteers (dados completos, protegida)
-         * - volunteers_publico (apenas nome, sobrenome, idade - pública)
-         */
-        async function salvarVoluntarioComDadosPublicos(formData) {
-            try {
-                // 1. Calcula a idade
-                const dataNasc = new Date(formData.birthDate);
-                const hoje = new Date();
-                let idade = hoje.getFullYear() - dataNasc.getFullYear();
-                const mes = hoje.getMonth() - dataNasc.getMonth();
-                if (mes < 0 || (mes === 0 && hoje.getDate() < dataNasc.getDate())) {
-                    idade--;
-                }
-                
-                // 2. Salva na coleção principal (dados completos)
-                const docRef = await db.collection('volunteers').add({
-                    firstName: formData.firstName,
-                    lastName: formData.lastName,
-                    email: formData.email,
-                    rg: formData.rg,
-                    cpf: formData.cpf || '',
-                    phone: formData.phone,
-                    birthDate: formData.birthDate,
-                    age: idade,
-                    seatNumber: formData.seatNumber,
-                    isMinor: formData.isMinor,
-                    responsavelId: formData.responsavelId || null,
-                    responsavelNome: formData.responsavelNome || null,
-                    emergencyContact: formData.emergencyContact || '',
-                    medicalInfo: formData.medicalInfo || '',
-                    registrationDate: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                // 3. Salva na coleção pública (apenas dados não sensíveis)
-                // IMPORTANTE: Usamos o mesmo ID do documento principal
-                await db.collection('volunteers_publico').doc(docRef.id).set({
-                    firstName: formData.firstName,
-                    lastName: formData.lastName,
-                    age: idade,
-                    seatNumber: formData.seatNumber,
-                    isMinor: formData.isMinor,
-                    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                console.log('Voluntário salvo em ambas as coleções! ID:', docRef.id);
-                return docRef.id;
-                
-            } catch (error) {
-                console.error('Erro ao salvar voluntário:', error);
-                throw error;
-            }
-        }
-
-        // Carregar da coleção pública (assentos ocupados E responsáveis)
-        db.collection('volunteers_publico').onSnapshot((snapshot) => {
-            volunteersPublico = [];
-            snapshot.forEach((doc) => {
-                volunteersPublico.push({ id: doc.id, ...doc.data() });
-            });
-            renderSeats(); // Atualiza os assentos
-            // Se for menor de idade, atualiza a lista de responsáveis
-            if (isMinor) {
-                updateResponsaveisList();
-            }
-        });
-
-        // Event listeners para máscaras
-        document.getElementById('cpf').addEventListener('input', (e) => {
-            e.target.value = maskCPF(e.target.value);
-        });
-        document.getElementById('rg').addEventListener('input', (e) => {
-            e.target.value = maskRG(e.target.value);
-        });
-        document.getElementById('phone').addEventListener('input', (e) => {
-            e.target.value = maskPhone(e.target.value);
-        });
-
-        // Verificar idade e mostrar campo de responsável
-        function checkAge() {
-            const birthDate = document.getElementById('birthDate').value;
-            if (!birthDate) return;
-
-            const age = calculateAge(birthDate);
-            isMinor = age < 18;
-
-            const responsavelSection = document.getElementById('responsavelSection');
+            isMinor = actualAge < 18;
             
             if (isMinor) {
-                responsavelSection.classList.remove('hidden');
-                document.getElementById('responsavelSelect').required = true;
-                updateResponsaveisList();
+                document.getElementById('responsavelSection').classList.remove('hidden');
+                carregarResponsaveis();
             } else {
-                responsavelSection.classList.add('hidden');
-                document.getElementById('responsavelSelect').required = false;
-                document.getElementById('responsavelSelect').value = '';
+                document.getElementById('responsavelSection').classList.add('hidden');
                 document.getElementById('responsavelInfo').classList.add('hidden');
                 selectedResponsavel = null;
             }
-        }
+        });
 
-        // Atualizar lista de responsáveis (maiores de idade) - USA COLEÇÃO PÚBLICA
-        function updateResponsaveisList() {
+        // Carrega responsáveis do localStorage
+        function carregarResponsaveis() {
             const select = document.getElementById('responsavelSelect');
-            const currentValue = select.value;
+            const voluntarios = JSON.parse(localStorage.getItem('voluntarios') || '[]');
+            const responsaveis = voluntarios.filter(v => !v.isMinor);
             
-            // Limpa opções exceto a primeira
-            while (select.options.length > 1) {
-                select.remove(1);
-            }
-
-            // Filtra apenas maiores de idade da coleção pública
-            const responsaveis = volunteersPublico.filter(v => v.age >= 18);
-
+            select.innerHTML = '<option value="">Selecione um responsável...</option>';
+            
             responsaveis.forEach(resp => {
                 const option = document.createElement('option');
                 option.value = resp.id;
-                option.textContent = `${resp.firstName} ${resp.lastName}`;
+                option.textContent = `${resp.firstName} ${resp.lastName} (RG: ${resp.rg})`;
                 select.appendChild(option);
             });
-
-            if (currentValue) {
-                select.value = currentValue;
-            }
+            
+            select.addEventListener('change', function() {
+                const selected = responsaveis.find(r => r.id == this.value);
+                if (selected) {
+                    selectedResponsavel = selected;
+                    document.getElementById('responsavelInfo').classList.remove('hidden');
+                    document.getElementById('respNome').textContent = `${selected.firstName} ${selected.lastName}`;
+                    document.getElementById('respRG').textContent = selected.rg;
+                    document.getElementById('respPhone').textContent = selected.phone;
+                } else {
+                    selectedResponsavel = null;
+                    document.getElementById('responsavelInfo').classList.add('hidden');
+                }
+            });
         }
 
-        // Mostrar info do responsável selecionado - USA COLEÇÃO PÚBLICA (apenas nome e idade)
-        function updateResponsavelInfo() {
-            const select = document.getElementById('responsavelSelect');
-            const infoDiv = document.getElementById('responsavelInfo');
-            const responsavelId = select.value;
-
-            if (!responsavelId) {
-                infoDiv.classList.add('hidden');
-                selectedResponsavel = null;
-                return;
-            }
-
-            // Busca na coleção pública (volunteersPublico)
-            const responsavel = volunteersPublico.find(v => v.id === responsavelId);
-            if (responsavel) {
-                selectedResponsavel = responsavel;
-                // Mostra apenas nome e idade (dados sensíveis não estão disponíveis na pública)
-                infoDiv.innerHTML = `
-                    <strong>Responsável Selecionado:</strong><br>
-                    ${responsavel.firstName} ${responsavel.lastName}<br>
-                    <small>Idade: ${responsavel.age} anos</small>
-                `;
-                infoDiv.classList.remove('hidden');
-            }
-        }
-
-        // Abrir modal de assentos
         function openSeatModal() {
             const requiredFields = ['firstName', 'lastName', 'email', 'rg', 'phone', 'birthDate'];
             
@@ -1159,149 +919,22 @@
                 medicalInfo: document.getElementById('medicalInfo').value.trim() || ''
             };
 
-            renderSeats();
-            seatModal.classList.add('active');
-            selectedSeat = null;
-            document.getElementById('confirmSeatBtn').disabled = true;
-            document.getElementById('selectedSeatDisplay').textContent = '';
+            abrirModalAssentos();
         }
 
-        function closeSeatModal() {
-            seatModal.classList.remove('active');
-            selectedSeat = null;
-        }
-
-        // Renderizar assentos com layout 2+2 para ambos os decks
-        function renderSeats() {
-            const upperRight = document.getElementById('upperRightSeats');
-            const lowerRight = document.getElementById('lowerRightSeats');
-
-            // Limpa os containers
-            upperRight.innerHTML = '';
-            lowerRight.innerHTML = '';
-
-        const occupiedSeats = volunteersPublico.map(v => v.seatNumber);
-
-            // DECK Superior (assentos 01-48) - 4 assentos por linha (2 + corredor + 2)
-            for (let row = 0; row < 12; row++) {
-                const base = row * 4;
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'seat-row-4';
-                
-                const seats = [
-                    { num: base + 1 },
-                    { num: base + 2 },
-                    null, // corredor
-                    { num: base + 3 },
-                    { num: base + 4 }
-                ];
-                
-                seats.forEach((seat) => {
-                    if (seat === null) {
-                        const corridor = document.createElement('div');
-                        corridor.className = 'corridor';
-                        corridor.innerHTML = '|||';
-                        rowDiv.appendChild(corridor);
-                    } else if (seat.num <= 48) {
-                        createSeatElement(seat.num, rowDiv, occupiedSeats);
-                    }
-                });
-                
-                upperRight.appendChild(rowDiv);
-            }
-
-            // DECK Inferior (assentos 49-60) - Layout 2+2 igual ao superior
-            for (let row = 0; row < 3; row++) {
-                const base = 49 + (row * 4);
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'seat-row-4';
-                
-                const seats = [
-                    { num: base },
-                    { num: base + 1 },
-                    null, // corredor
-                    { num: base + 2 },
-                    { num: base + 3 }
-                ];
-                
-                seats.forEach((seat) => {
-                    if (seat === null) {
-                        const corridor = document.createElement('div');
-                        corridor.className = 'corridor';
-                        corridor.innerHTML = '|||';
-                        rowDiv.appendChild(corridor);
-                    } else if (seat.num <= 60) {
-                        createSeatElement(seat.num, rowDiv, occupiedSeats);
-                    }
-                });
-                
-                lowerRight.appendChild(rowDiv);
-            }
-        }
-
-        function createSeatElement(number, container, occupiedSeats) {
-            const seat = document.createElement('div');
-            seat.className = 'seat';
-            seat.textContent = number;
-            seat.dataset.seat = number;
-
-            if (occupiedSeats.includes(number)) {
-                seat.classList.add('occupied');
-                const volunteer = volunteersPublico.find(v => v.seatNumber === number);
-                seat.title = `Ocupado por: ${volunteer.firstName} ${volunteer.lastName}`;
-            } else {
-                seat.addEventListener('click', () => selectSeat(number));
-            }
-
-            container.appendChild(seat);
-        }
-
-        function selectSeat(seatNumber) {
-            document.querySelectorAll('.seat.selected').forEach(seat => {
-                seat.classList.remove('selected');
-            });
-
-            const seatElement = document.querySelector(`[data-seat="${seatNumber}"]`);
-            if (seatElement) {
-                seatElement.classList.add('selected');
-                selectedSeat = seatNumber;
-                document.getElementById('confirmSeatBtn').disabled = false;
-                document.getElementById('selectedSeatDisplay').textContent = selectedSeat;
-            }
-        }
-
-        // Enviar email de confirmação
-        async function sendConfirmationEmail(formData, seatNumber) {
-            try {
-                // Verifica se EmailJS está configurado
-                if (typeof EMAILJS_CONFIG === 'undefined') {
-                    console.warn('EmailJS não configurado');
-                    return false;
-                }
-
-                const templateParams = {
-                    to_email: formData.email,
-                    nome: `${formData.firstName} ${formData.lastName}`,
-                    assento: seatNumber
-                };
-
-                await emailjs.send(
-                    EMAILJS_CONFIG.SERVICE_ID,
-                    EMAILJS_CONFIG.TEMPLATE_ID,
-                    templateParams
-                );
-                console.log('Email enviado com sucesso!');
-                return true;
-            } catch (error) {
-                console.error('Erro ao enviar email:', error);
-                return false;
-            }
-        }
-
-        // Confirmar cadastro
         async function confirmSeatSelection() {
-            if (!selectedSeat || !tempFormData) return;
+            // Função vazia - o processamento agora é feito via callback
+        }
 
+        // Inicializa o módulo de assentos
+        document.addEventListener('DOMContentLoaded', function() {
+            initSelecaoAssento(async function(assentoSelecionado) {
+                // Callback quando confirmar no modal
+                await processarCadastro(assentoSelecionado);
+            });
+        });
+
+        async function processarCadastro(assentoSelecionado) {
             const confirmBtn = document.getElementById('confirmSeatBtn');
             const originalBtnText = confirmBtn.innerHTML;
             confirmBtn.innerHTML = 'Processando... <span class="loading"></span>';
@@ -1309,39 +942,33 @@
 
             const formData = {
                 ...tempFormData,
-                seatNumber: selectedSeat
+                seatNumber: assentoSelecionado
             };
 
             try {
-                // 1. Salva no Firebase (ambas as coleções)
                 await salvarVoluntarioComDadosPublicos(formData);
                 
-                // 2. Tenta enviar email (não bloqueia se falhar)
                 let emailSent = false;
                 try {
-                    emailSent = await sendConfirmationEmail(formData, selectedSeat);
+                    emailSent = await sendConfirmationEmail(formData, assentoSelecionado);
                 } catch (emailError) {
-                    console.warn('Erro ao enviar email (não crítico):', emailError);
+                    console.warn('Erro ao enviar email:', emailError);
                 }
                 
-                // 3. Limpa formulário e mostra sucesso
-                closeSeatModal();
                 document.getElementById('volunteerForm').reset();
                 document.getElementById('responsavelSection').classList.add('hidden');
                 document.getElementById('responsavelInfo').classList.add('hidden');
                 selectedResponsavel = null;
                 isMinor = false;
                 
-                // 4. Mensagem de sucesso
                 const successMessage = document.getElementById('successMessage');
                 if (emailSent) {
                     successMessage.innerHTML = '✅ Cadastro realizado com sucesso! Um email de confirmação foi enviado para ' + formData.email;
                 } else {
-                    successMessage.innerHTML = '✅ Cadastro realizado com sucesso! <br><small>(Não foi possível enviar o email de confirmação, mas seu cadastro foi salvo)</small>';
+                    successMessage.innerHTML = '✅ Cadastro realizado com sucesso! <br><small>(Não foi possível enviar o email de confirmação)</small>';
                 }
                 successMessage.style.display = 'block';
                 
-                // Esconde mensagem após 8 segundos
                 setTimeout(() => {
                     successMessage.style.display = 'none';
                 }, 8000);
@@ -1350,10 +977,9 @@
                 console.error('Erro ao salvar cadastro:', error);
                 showError('Erro ao salvar cadastro. Tente novamente.');
             } finally {
-                // Restaura botão
                 confirmBtn.innerHTML = originalBtnText;
                 confirmBtn.disabled = false;
-                document.getElementById('selectedSeatDisplay').textContent = selectedSeat || '';
+                document.getElementById('selectedSeatDisplay').textContent = '';
             }
         }
 
@@ -1366,10 +992,35 @@
             }, 5000);
         }
 
-        // Fechar modal ao clicar fora
-        window.onclick = function(event) {
-            if (event.target === seatModal) closeSeatModal();
-        };
+        // Máscaras de input
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+                e.target.value = value;
+            }
+        });
+
+        document.getElementById('rg').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 9) {
+                value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                value = value.replace(/\.(\d{3})(\d)/, '.$1-$2');
+                e.target.value = value;
+            }
+        });
+
+        document.getElementById('cpf').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/^(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+                value = value.replace(/\.(\d{3})(\d)/, '.$1-$2');
+                e.target.value = value;
+            }
+        });
     </script>
 </body>
 </html>
