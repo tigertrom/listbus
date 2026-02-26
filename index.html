@@ -1006,6 +1006,7 @@
                     firstName: formData.firstName,
                     lastName: formData.lastName,
                     age: idade,
+                    seatNumber: formData.seatNumber,
                     isMinor: formData.isMinor,
                     criadoEm: firebase.firestore.FieldValue.serverTimestamp()
                 });
@@ -1019,21 +1020,13 @@
             }
         }
 
-        // Carregar voluntários da coleção principal (para assentos ocupados)
-        db.collection('volunteers').onSnapshot((snapshot) => {
-            volunteers = [];
-            snapshot.forEach((doc) => {
-                volunteers.push({ id: doc.id, ...doc.data() });
-            });
-            renderSeats(); // Atualiza os assentos
-        });
-
-        // NOVO: Carregar voluntários da coleção pública (para responsáveis)
+        // Carregar da coleção pública (assentos ocupados E responsáveis)
         db.collection('volunteers_publico').onSnapshot((snapshot) => {
             volunteersPublico = [];
             snapshot.forEach((doc) => {
                 volunteersPublico.push({ id: doc.id, ...doc.data() });
             });
+            renderSeats(); // Atualiza os assentos
             // Se for menor de idade, atualiza a lista de responsáveis
             if (isMinor) {
                 updateResponsaveisList();
@@ -1187,7 +1180,7 @@
             upperRight.innerHTML = '';
             lowerRight.innerHTML = '';
 
-            const occupiedSeats = volunteers.map(v => v.seatNumber);
+        const occupiedSeats = volunteersPublico.map(v => v.seatNumber);
 
             // DECK Superior (assentos 01-48) - 4 assentos por linha (2 + corredor + 2)
             for (let row = 0; row < 12; row++) {
@@ -1254,7 +1247,7 @@
 
             if (occupiedSeats.includes(number)) {
                 seat.classList.add('occupied');
-                const volunteer = volunteers.find(v => v.seatNumber === number);
+                const volunteer = volunteersPublico.find(v => v.seatNumber === number);
                 seat.title = `Ocupado por: ${volunteer.firstName} ${volunteer.lastName}`;
             } else {
                 seat.addEventListener('click', () => selectSeat(number));
