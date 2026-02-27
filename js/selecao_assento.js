@@ -174,17 +174,17 @@ function criarDeckInferior() {
     `;
     gridContainer.appendChild(area2);
 
-    // 4. QUATRO fileiras de 3 assentos: 2 na esquerda + 1 na direita
-    // Fileira 1: 49, 50 (esq) | corredor | 51 (dir)
+    // 4. QUATRO fileiras de 3 assentos: 2 na esquerda + 1 na direita (ALINHADO À DIREITA)
+    // Fileira 1: 49, 50 (esq) | corredor | 51 (dir - alinhado à direita)
     gridContainer.appendChild(criarFileiraInferior3Assentos(49));
     
-    // Fileira 2: 52, 53 (esq) | corredor | 54 (dir)
+    // Fileira 2: 52, 53 (esq) | corredor | 54 (dir - alinhado à direita)
     gridContainer.appendChild(criarFileiraInferior3Assentos(52));
     
-    // Fileira 3: 55, 56 (esq) | corredor | 57 (dir)
+    // Fileira 3: 55, 56 (esq) | corredor | 57 (dir - alinhado à direita)
     gridContainer.appendChild(criarFileiraInferior3Assentos(55));
     
-    // Fileira 4: 58, 59 (esq) | corredor | 60 (dir)
+    // Fileira 4: 58, 59 (esq) | corredor | 60 (dir - alinhado à direita)
     gridContainer.appendChild(criarFileiraInferior3Assentos(58));
 
     // 5. Bagageiro (espaço vazio)
@@ -239,8 +239,8 @@ function criarFileiraCompleta(numInicial) {
     return fileira;
 }
 
-// NOVA FUNÇÃO: Cria fileira do deck inferior com 3 assentos (2 esq + 1 dir)
-// Disposição: numInicial, numInicial+1 (esq) | corredor | numInicial+2 (dir)
+// NOVA FUNÇÃO: Cria fileira do deck inferior com 3 assentos (2 esq + 1 dir ALINHADO À DIREITA)
+// Disposição: numInicial, numInicial+1 (esq) | corredor | [vazio], numInicial+2 (dir)
 function criarFileiraInferior3Assentos(numInicial) {
     const fileira = document.createElement('div');
     fileira.className = 'fileira-simples';
@@ -253,29 +253,26 @@ function criarFileiraInferior3Assentos(numInicial) {
     esquerdo.appendChild(criarPoltrona(numInicial + 1));  // 50, 53, 56, 59 (corredor)
     fileira.appendChild(esquerdo);
 
-    // Corredor
+    // Corredor (MAIOR no deck inferior)
     const corredor = document.createElement('div');
     corredor.className = 'espaco-meio';
     corredor.innerHTML = '│││';
     fileira.appendChild(corredor);
 
-    // Lado direito (1 assento): numInicial+2 (janela - único assento do lado)
-    // Ex: 51, 54, 57, 60
-    // Como é ímpar (51, 57) ou par (54, 60), fica na posição externa (janela)
+    // Lado direito (1 assento ALINHADO À DIREITA): [espaço vazio], numInicial+2
+    // Ex: [vazio], 51 ou [vazio], 54 ou [vazio], 57 ou [vazio], 60
     const direito = document.createElement('div');
     direito.className = 'lado-direito';
-    direito.style.gridTemplateColumns = '1fr'; // Apenas 1 coluna
     
-    // Cria espaço vazio no corredor e o assento na janela
+    // Cria espaço vazio na posição do corredor (esquerda) e assento na janela (direita)
     const espacoVazio = document.createElement('div');
-    espacoVazio.style.visibility = 'hidden'; // Espaço invisível para alinhar
+    espacoVazio.style.visibility = 'hidden'; // Espaço invisível para manter o grid
     
     const assento = criarPoltrona(numInicial + 2); // 51, 54, 57, 60
     
-    // Decide posição: se ímpar (51, 57) fica na "janela" (posição 2), se par (54, 60) também
-    // Como só tem 1 assento, ele ocupa a posição da janela (segunda posição)
+    // ORDEM CORRIGIDA: espaço vazio primeiro (esquerda/corredor), depois o assento (direita/janela)
     direito.appendChild(espacoVazio);  // Espaço do corredor (invisível)
-    direito.appendChild(assento);      // Assento na janela
+    direito.appendChild(assento);      // Assento alinhado à direita (janela)
     
     fileira.appendChild(direito);
 
