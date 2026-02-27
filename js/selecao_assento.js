@@ -85,7 +85,7 @@ function criarDeckSuperior() {
     // Fileira 4: Assentos 11-12 (esq) + Cafeteria/Frigobar (dir)
     gridContainer.appendChild(criarFileiraCafeteria(11));
 
-    // CORREÇÃO: Fileira 5 - Assentos 13-16 (completo) <- ESTAVA FALTANDO!
+    // CORREÇÃO: Fileira 5 - Assentos 13-16 (completo)
     gridContainer.appendChild(criarFileiraCompleta(13));
 
     // Fileiras 6-12: Assentos 17-44 (completo)
@@ -101,7 +101,7 @@ function criarDeckSuperior() {
 }
 
 // ==========================================
-// DECK INFERIOR (12 assentos) - REESTRUTURADO
+// DECK INFERIOR (12 assentos) - 4 FILEIRAS DE 3 ASSENTOS
 // ==========================================
 function criarDeckInferior() {
     const deck = document.createElement('div');
@@ -174,15 +174,18 @@ function criarDeckInferior() {
     `;
     gridContainer.appendChild(area2);
 
-    // 4. Três fileiras de assentos
-    // Fileira 1: 49-52 (completa)
-    gridContainer.appendChild(criarFileiraCompleta(49));
+    // 4. QUATRO fileiras de 3 assentos: 2 na esquerda + 1 na direita
+    // Fileira 1: 49, 50 (esq) | corredor | 51 (dir)
+    gridContainer.appendChild(criarFileiraInferior3Assentos(49));
     
-    // Fileira 2: 53-56 (completa)
-    gridContainer.appendChild(criarFileiraCompleta(53));
+    // Fileira 2: 52, 53 (esq) | corredor | 54 (dir)
+    gridContainer.appendChild(criarFileiraInferior3Assentos(52));
     
-    // Fileira 3: 57, 58, FRIGOBAR, 60, 59
-    gridContainer.appendChild(criarFileiraInferiorFinal());
+    // Fileira 3: 55, 56 (esq) | corredor | 57 (dir)
+    gridContainer.appendChild(criarFileiraInferior3Assentos(55));
+    
+    // Fileira 4: 58, 59 (esq) | corredor | 60 (dir)
+    gridContainer.appendChild(criarFileiraInferior3Assentos(58));
 
     // 5. Bagageiro (espaço vazio)
     const bagageiro = document.createElement('div');
@@ -206,15 +209,17 @@ function criarDeckInferior() {
 }
 
 // Cria uma fileira completa (4 assentos: 2 + corredor + 2)
+// CORREÇÃO: Lado direito invertido para ímpares ficarem na janela
 function criarFileiraCompleta(numInicial) {
     const fileira = document.createElement('div');
     fileira.className = 'fileira-simples';
 
-    // Lado esquerdo (2 assentos)
+    // Lado esquerdo (2 assentos): numInicial (janela), numInicial+1 (corredor)
+    // Ex: 1, 2
     const esquerdo = document.createElement('div');
     esquerdo.className = 'lado-esquerdo';
-    esquerdo.appendChild(criarPoltrona(numInicial));
-    esquerdo.appendChild(criarPoltrona(numInicial + 1));
+    esquerdo.appendChild(criarPoltrona(numInicial));      // 1 (janela)
+    esquerdo.appendChild(criarPoltrona(numInicial + 1));  // 2 (corredor)
     fileira.appendChild(esquerdo);
 
     // Corredor
@@ -223,11 +228,55 @@ function criarFileiraCompleta(numInicial) {
     corredor.innerHTML = '│││';
     fileira.appendChild(corredor);
 
-    // Lado direito (2 assentos)
+    // Lado direito (2 assentos) - ORDEM INVERTIDA: numInicial+3 (corredor), numInicial+2 (janela)
+    // Ex: 4, 3 (antes era 3, 4)
     const direito = document.createElement('div');
     direito.className = 'lado-direito';
-    direito.appendChild(criarPoltrona(numInicial + 2));
-    direito.appendChild(criarPoltrona(numInicial + 3));
+    direito.appendChild(criarPoltrona(numInicial + 3));    // 4 (corredor) ← INVERTIDO
+    direito.appendChild(criarPoltrona(numInicial + 2));   // 3 (janela)  ← INVERTIDO
+    fileira.appendChild(direito);
+
+    return fileira;
+}
+
+// NOVA FUNÇÃO: Cria fileira do deck inferior com 3 assentos (2 esq + 1 dir)
+// Disposição: numInicial, numInicial+1 (esq) | corredor | numInicial+2 (dir)
+function criarFileiraInferior3Assentos(numInicial) {
+    const fileira = document.createElement('div');
+    fileira.className = 'fileira-simples';
+
+    // Lado esquerdo (2 assentos): numInicial (janela), numInicial+1 (corredor)
+    // Ex: 49, 50 ou 52, 53 ou 55, 56 ou 58, 59
+    const esquerdo = document.createElement('div');
+    esquerdo.className = 'lado-esquerdo';
+    esquerdo.appendChild(criarPoltrona(numInicial));      // 49, 52, 55, 58 (janela)
+    esquerdo.appendChild(criarPoltrona(numInicial + 1));  // 50, 53, 56, 59 (corredor)
+    fileira.appendChild(esquerdo);
+
+    // Corredor
+    const corredor = document.createElement('div');
+    corredor.className = 'espaco-meio';
+    corredor.innerHTML = '│││';
+    fileira.appendChild(corredor);
+
+    // Lado direito (1 assento): numInicial+2 (janela - único assento do lado)
+    // Ex: 51, 54, 57, 60
+    // Como é ímpar (51, 57) ou par (54, 60), fica na posição externa (janela)
+    const direito = document.createElement('div');
+    direito.className = 'lado-direito';
+    direito.style.gridTemplateColumns = '1fr'; // Apenas 1 coluna
+    
+    // Cria espaço vazio no corredor e o assento na janela
+    const espacoVazio = document.createElement('div');
+    espacoVazio.style.visibility = 'hidden'; // Espaço invisível para alinhar
+    
+    const assento = criarPoltrona(numInicial + 2); // 51, 54, 57, 60
+    
+    // Decide posição: se ímpar (51, 57) fica na "janela" (posição 2), se par (54, 60) também
+    // Como só tem 1 assento, ele ocupa a posição da janela (segunda posição)
+    direito.appendChild(espacoVazio);  // Espaço do corredor (invisível)
+    direito.appendChild(assento);      // Assento na janela
+    
     fileira.appendChild(direito);
 
     return fileira;
@@ -239,10 +288,11 @@ function criarFileiraEscada(numInicial) {
     fileira.className = 'fileira-simples';
 
     // Lado esquerdo (2 assentos: 9-10)
+    // 9 (janela), 10 (corredor)
     const esquerdo = document.createElement('div');
     esquerdo.className = 'lado-esquerdo';
-    esquerdo.appendChild(criarPoltrona(numInicial));
-    esquerdo.appendChild(criarPoltrona(numInicial + 1));
+    esquerdo.appendChild(criarPoltrona(numInicial));      // 9 (janela)
+    esquerdo.appendChild(criarPoltrona(numInicial + 1));  // 10 (corredor)
     fileira.appendChild(esquerdo);
 
     // Corredor
@@ -270,10 +320,11 @@ function criarFileiraCafeteria(numInicial) {
     fileira.className = 'fileira-simples';
 
     // Lado esquerdo (2 assentos: 11-12)
+    // 11 (janela), 12 (corredor)
     const esquerdo = document.createElement('div');
     esquerdo.className = 'lado-esquerdo';
-    esquerdo.appendChild(criarPoltrona(numInicial));
-    esquerdo.appendChild(criarPoltrona(numInicial + 1));
+    esquerdo.appendChild(criarPoltrona(numInicial));      // 11 (janela)
+    esquerdo.appendChild(criarPoltrona(numInicial + 1));  // 12 (corredor)
     fileira.appendChild(esquerdo);
 
     // Corredor
@@ -308,15 +359,16 @@ function criarFileiraCafeteria(numInicial) {
 }
 
 // Cria última fileira do deck superior: 45, 46, Frigobar, 48, 47
+// CORREÇÃO: Lado direito invertido: 48 (corredor), 47 (janela)
 function criarFileiraFinalFrigobar() {
     const fileira = document.createElement('div');
     fileira.className = 'fileira-simples';
 
-    // Lado esquerdo: 45, 46
+    // Lado esquerdo: 45 (janela), 46 (corredor)
     const esquerdo = document.createElement('div');
     esquerdo.className = 'lado-esquerdo';
-    esquerdo.appendChild(criarPoltrona(45));
-    esquerdo.appendChild(criarPoltrona(46));
+    esquerdo.appendChild(criarPoltrona(45));  // 45 (janela)
+    esquerdo.appendChild(criarPoltrona(46));  // 46 (corredor)
     fileira.appendChild(esquerdo);
 
     // Meio: FRIGOBAR (no lugar do corredor)
@@ -336,50 +388,11 @@ function criarFileiraFinalFrigobar() {
     frigobar.textContent = '🧊 FRIGOBAR';
     fileira.appendChild(frigobar);
 
-    // Lado direito: 48, 47 (ordem invertida: 48 na frente, 47 atrás)
+    // Lado direito: 48 (corredor), 47 (janela) - ORDEM INVERTIDA
     const direito = document.createElement('div');
     direito.className = 'lado-direito';
-    direito.appendChild(criarPoltrona(48));
-    direito.appendChild(criarPoltrona(47));
-    fileira.appendChild(direito);
-
-    return fileira;
-}
-
-// Cria última fileira do deck inferior: 57, 58, FRIGOBAR, 60, 59
-function criarFileiraInferiorFinal() {
-    const fileira = document.createElement('div');
-    fileira.className = 'fileira-simples';
-
-    // Lado esquerdo: 57, 58
-    const esquerdo = document.createElement('div');
-    esquerdo.className = 'lado-esquerdo';
-    esquerdo.appendChild(criarPoltrona(57));
-    esquerdo.appendChild(criarPoltrona(58));
-    fileira.appendChild(esquerdo);
-
-    // Meio: FRIGOBAR
-    const frigobar = document.createElement('div');
-    frigobar.style.background = '#facc15';
-    frigobar.style.color = '#854d0e';
-    frigobar.style.borderRadius = '6px';
-    frigobar.style.padding = '4px';
-    frigobar.style.textAlign = 'center';
-    frigobar.style.fontSize = '0.55rem';
-    frigobar.style.fontWeight = 'bold';
-    frigobar.style.writingMode = 'vertical-rl';
-    frigobar.style.textOrientation = 'mixed';
-    frigobar.style.display = 'flex';
-    frigobar.style.alignItems = 'center';
-    frigobar.style.justifyContent = 'center';
-    frigobar.textContent = '🧊 FRIGOBAR';
-    fileira.appendChild(frigobar);
-
-    // Lado direito: 60, 59 (ordem invertida)
-    const direito = document.createElement('div');
-    direito.className = 'lado-direito';
-    direito.appendChild(criarPoltrona(60));
-    direito.appendChild(criarPoltrona(59));
+    direito.appendChild(criarPoltrona(48));   // 48 (corredor) ← INVERTIDO
+    direito.appendChild(criarPoltrona(47));   // 47 (janela)  ← INVERTIDO
     fileira.appendChild(direito);
 
     return fileira;
